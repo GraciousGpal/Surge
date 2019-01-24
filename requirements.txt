@@ -1,4 +1,4 @@
 requests
-yarl<1.2
-discord-rewrite
+-e git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py[voice]
+prettytable
 sqlalchemy
