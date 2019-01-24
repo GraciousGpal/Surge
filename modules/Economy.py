@@ -3,7 +3,7 @@ from discord import Embed
 from discord.ext import commands
 from prettytable import PrettyTable
 from datetime import datetime
-from Core import transaction, search, Query, create_player
+from Core import transaction, search, Query, create_player , emb
 
 
 class Economy:
@@ -93,7 +93,8 @@ class Economy:
         """
         Select your profession or view profession.
         """
-        await ctx.send("Ha you got jebaited..help me code this pls")
+
+        await ctx.send(emb())
 
     @commands.command()
     async def topdog(self, ctx):
@@ -146,7 +147,7 @@ class Economy:
                                                    reason="Purchased Time:{}".format(datetime.now()))
                 await ctx.send("Congrats you have purchased {}!.".format(role_name))
         elif action == "sell" and role_name is not None:
-            pass
+            await ctx.send("IN PROGRESS")
 
     async def VresourceDist(self):
         """

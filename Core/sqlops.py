@@ -1,8 +1,7 @@
 import logging
 from datetime import datetime
 
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, CheckConstraint, Boolean
-from sqlalchemy import create_engine
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, CheckConstraint, Boolean , create_engine , BigInteger
 from sqlalchemy import exists, event
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
@@ -13,8 +12,8 @@ Base = declarative_base()
 
 # Create an engine that stores data in the local directory's
 # sqlalchemy_example.db file.
-engine = create_engine('sqlite:///data/data.db')
-# engine = create_engine(os.environ['Db_Base'])
+#engine = create_engine('sqlite:///data/data.db')
+engine = create_engine('postgres://ooyzljuy:zF1JjlBWVrffdVUEhlhuroyUzspvU6ws@manny.db.elephantsql.com:5432/ooyzljuy')
 
 # Bind the engine to the metadata of the Base class so that the
 # declaratives can be accessed through a DBSession instance
@@ -29,7 +28,7 @@ Base.metadata.bind = engine
 # session.rollback()
 session = sessionmaker(bind=engine)()
 
-
+'''
 # Sets WAL MODE on sqlite
 @event.listens_for(engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
@@ -37,12 +36,13 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor.execute("PRAGMA journal_mode=WAL")
     cursor.execute("PRAGMA temp_store = 2")
     cursor.close()
+'''
 
 
 # SQL Models
 class Guild(Base):
     __tablename__ = 'Guilds'
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     name = Column(String(250), nullable=False)
     prefix = Column(String(2), default='+')
     roles = relationship("Role")
@@ -53,7 +53,7 @@ class User(Base):
     __tablename__ = 'Users'
     # Here we define columns for the table User
     # Notice that each column is also a normal Python instance attribute.
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     name = Column(String, nullable=False)
     moolah = Column(Integer, CheckConstraint('moolah >= 0'), nullable=False)
     updated_on = Column(DateTime, nullable=False, default=datetime.now(), onupdate=datetime.now())
@@ -62,7 +62,7 @@ class User(Base):
 class Module(Base):
     __tablename__ = 'Modules'
     id = Column(Integer, primary_key=True)
-    guild_id = Column(Integer, ForeignKey('Guilds.id'))
+    guild_id = Column(BigInteger, ForeignKey('Guilds.id'))
     modules = relationship("Guild", back_populates="modules")
     name = Column(String(32), nullable=False)
     state = Column(Boolean, default=False)
@@ -70,14 +70,14 @@ class Module(Base):
 
 class Role(Base):
     __tablename__ = 'Roles'
-    id = Column(Integer, primary_key=True)
-    guild_id = Column(Integer, ForeignKey('Guilds.id'))
+    id = Column(BigInteger, primary_key=True)
+    guild_id = Column(BigInteger, ForeignKey('Guilds.id'))
     price = Column(Integer, CheckConstraint('price >= 0'))
 
 
 class Inventory(Base):
     __tablename__ = 'inventory'
-    player_id = Column(Integer, ForeignKey('player.id'), primary_key=True)
+    player_id = Column(BigInteger, ForeignKey('player.id'), primary_key=True)
     item_id = Column(Integer, ForeignKey('item.id'), primary_key=True)
     quantity = Column(Integer)
     # ------------------------- #
@@ -87,7 +87,7 @@ class Inventory(Base):
 
 class Player(Base):
     __tablename__ = 'player'
-    id = Column(Integer, ForeignKey('Users.id'), primary_key=True)
+    id = Column(BigInteger, ForeignKey('Users.id'), primary_key=True)
     # ----------BASE----------#
     nclass = Column(String)
     level = Column(Integer, default=0)
@@ -120,7 +120,7 @@ class Item(Base):
 class Auction(Base):
     __tablename__ = 'auction'
     id = Column(Integer, primary_key=True)
-    player_id = Column(Integer, ForeignKey('player.id'))
+    player_id = Column(BigInteger, ForeignKey('player.id'))
     item_id = Column(Integer, ForeignKey('item.id'))
     # ------------------------- #
     quantity = Column(Integer)
@@ -128,7 +128,6 @@ class Auction(Base):
     # ------------------------- #
     player = relationship("Player")
     item = relationship("Item")
-
 
 async def create_player(ctx, class_m):
     if class_m is None:
@@ -200,29 +199,34 @@ def dataCheck(self):
 
 
 def create_full_table(self):
-    Base.metadata.create_all(engine)
+    #Base.metadata.drop_all(engine)
+    #Base.metadata.create_all(engine)
     for server in self.guilds:
-        try:
-            guildz = Guild(id=server.id, name=server.name)
-            session.add(guildz)
-            session.commit()
-        except IntegrityError as e:
-            logging.error(e)
+        if session.query(Guild).filter_by(id=server.id).first() is None:
+            try:
+                guildz = Guild(id=server.id, name=server.name)
+                session.add(guildz)
+                #session.commit()
+            except IntegrityError as e:
+                logging.error(e)
         for member in server.members:
-            try:
-                user = User(id=member.id, name=member.name, moolah=0)
-                session.add(user)
-                session.commit()
-            except IntegrityError as e:
-                logging.error(e)
-                session.rollback()
+            if session.query(User).filter_by(id=member.id).first() is None:
+                try:
+                    #logging.info(member.id)
+                    user = User(id=member.id, name=member.name, moolah=0)
+                    session.add(user)
+                    #session.commit()
+                except IntegrityError as e:
+                    logging.error(e)
+                    session.rollback()
         for roles in server.roles:
-            try:
-                channelz = Role(id=roles.id, guild_id=server.id)
-                session.add(channelz)
-            except IntegrityError as e:
-                logging.error(e)
-                session.rollback()
+            if session.query(Role).filter_by(id=roles.id).first() is None:
+                try:
+                    channelz = Role(id=roles.id, guild_id=server.id)
+                    session.add(channelz)
+                except IntegrityError as e:
+                    logging.error(e)
+                    session.rollback()
     logging.info("Table Creation finished!")
     session.commit()
 

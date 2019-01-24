@@ -61,7 +61,7 @@ class MyClient(commands.Bot):
             await asyncio.sleep(10)
 
     async def on_ready(self):
-        # create_full_table(self)
+        #create_full_table(self)
         checksettings(self)
 
         # Initial module Loading..
@@ -147,7 +147,7 @@ async def reload(ctx, extension):
 async def load(ctx, extension):
     try:
         bot.load_extension("modules." + extension)
-        await ctx.message.channel.send("Module [{}] reloaded!".format(extension))
+        await ctx.message.channel.send("Module [{}] loaded!".format(extension))
     except (AttributeError, ImportError) as e:
         await ctx.message.channel.send("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
 
@@ -157,6 +157,7 @@ async def load(ctx, extension):
 async def unload(ctx, extension):
     try:
         bot.unload_extension("modules." + extension)
+        await ctx.message.channel.send("Module [{}] unloaded!".format(extension))
     except  ModuleNotFoundError as e:
         logging.error(e)
 
@@ -179,5 +180,4 @@ os.environ['compiler_clientId'] = '14444bf7dedc244050166a77295bc61c'
 os.environ[
     'compiler_clientSecret'] = "b9d5a80a216692a45d2d26ef294a20d43ffa4762b54ea980de9e28cffda43fcf"
 
-bot.run(os.environ['DISCORDAPI'],
-        bot=True, reconnect=True)
+bot.run(os.environ['DISCORDAPI'], bot=True, reconnect=True)
