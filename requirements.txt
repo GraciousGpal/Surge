@@ -1,0 +1,4 @@
+requests
+yarl<1.2
+discord-rewrite
+sqlalchemy
