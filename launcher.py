@@ -5,7 +5,7 @@ import sys
 import discord
 from discord.ext import commands
 
-from Core import dataCheck, Guild, session, User, emb , create_full_table
+from Core import dataCheck, Guild, session, User, emb, create_full_table
 from Core.preboot import *
 
 
@@ -61,7 +61,7 @@ class MyClient(commands.Bot):
             await asyncio.sleep(10)
 
     async def on_ready(self):
-        #create_full_table(self)
+        # create_full_table(self)
         checksettings(self)
 
         # Initial module Loading..
@@ -127,18 +127,38 @@ async def shutdown(ctx):
     session.close()
     sys.exit()
 
+
 @bot.command(hidden=True)
 @commands.is_owner()
 async def reload(ctx, extension):
     try:
-        bot.unload_extension("modules."+extension)
+        bot.unload_extension("modules." + extension)
     except  ModuleNotFoundError as e:
         logging.error(e)
     try:
-        bot.load_extension("modules."+extension)
+        bot.load_extension("modules." + extension)
         await ctx.message.channel.send("Module [{}] reloaded!".format(extension))
     except (AttributeError, ImportError) as e:
         await ctx.message.channel.send("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
+
+
+@bot.command(hidden=True)
+@commands.is_owner()
+async def load(ctx, extension):
+    try:
+        bot.load_extension("modules." + extension)
+        await ctx.message.channel.send("Module [{}] reloaded!".format(extension))
+    except (AttributeError, ImportError) as e:
+        await ctx.message.channel.send("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
+
+
+@bot.command(hidden=True)
+@commands.is_owner()
+async def unload(ctx, extension):
+    try:
+        bot.unload_extension("modules." + extension)
+    except  ModuleNotFoundError as e:
+        logging.error(e)
 
 
 @bot.command(hidden=True)

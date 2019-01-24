@@ -106,44 +106,44 @@ class Economy:
         lis_form = list(test)
         author = [x.id for x in lis_form]
         for item in test:
-            x.add_row([int(lis_form.index(item)+1), item.name, item.moolah])
+            x.add_row([int(lis_form.index(item) + 1), item.name, item.moolah])
 
         if ctx.author.id not in author:
             test1 = list(Query(types='user').get('all', 'moolah', 'desc'))
             author = [test1.index(x) for x in test1 if x.id == ctx.author.id][0]
-            mini_list = test1[author-3:author+3]
+            mini_list = test1[author - 3:author + 3]
             x.add_row(["..........", "..........", ".........."])
             for member in mini_list:
                 if member.id == ctx.author.id:
-                    x.add_row([int(author - 3 + mini_list.index(member)), "->>"+member.name+"<<-", member.moolah])
+                    x.add_row([int(author - 3 + mini_list.index(member)), "->>" + member.name + "<<-", member.moolah])
                 else:
-                    x.add_row([int(author-3+mini_list.index(member)), member.name, member.moolah])
+                    x.add_row([int(author - 3 + mini_list.index(member)), member.name, member.moolah])
         await ctx.send('```{}```'.format(x))
 
     @commands.command()
-    async def role(self, ctx, action=None,role_name=None):
+    async def role(self, ctx, action=None, role_name=None):
         """
         Lobby Moolah to increase your status.
         """
         test = Query(types='role').get(number='special', orderby='price', order='desc').filter_by(guild_id=ctx.guild.id)
         if action is None and role_name is None:
             x = PrettyTable()
-            x.field_names = ["Name",  "Price"]
+            x.field_names = ["Name", "Price"]
             for item in test:
                 if item.price is not None:
-                    x.add_row([discord.utils.get(ctx.message.guild.roles,id=item.id).name, item.price])
+                    x.add_row([discord.utils.get(ctx.message.guild.roles, id=item.id).name, item.price])
             await ctx.send("```{}```".format(x))
 
         elif action == "buy" and role_name is not None:
             role = discord.utils.get(ctx.message.guild.roles, name=role_name)
             author = transaction(self.bot, ctx.author)
-            is_sale = [x.price for x in test if x.id ==role.id][0]
-            if is_sale is None :
+            is_sale = [x.price for x in test if x.id == role.id][0]
+            if is_sale is None:
                 await ctx.send("{} is not for sale on this server!.".format(role_name))
             else:
                 author.remove(is_sale)
                 await ctx.message.author.add_roles(role,
-                                           reason="Purchased Time:{}".format(datetime.now()))
+                                                   reason="Purchased Time:{}".format(datetime.now()))
                 await ctx.send("Congrats you have purchased {}!.".format(role_name))
         elif action == "sell" and role_name is not None:
             pass
