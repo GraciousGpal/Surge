@@ -1,6 +1,6 @@
 import asyncio
 from difflib import get_close_matches
-
+from emoji import UNICODE_EMOJI
 import discord
 from discord.ext import commands
 
@@ -69,3 +69,29 @@ def emb(item):
     :return:
     """
     return '```' + str(item) + '```'
+
+
+def is_emoji(s):
+    """
+    Checks if the letter s is an emoji.
+    :param s:
+    :return:
+    """
+    return s in UNICODE_EMOJI
+
+
+def emoji_norm(txt, emoji):
+    """
+    Replace emoji characters with the specified character.
+    :param txt:
+    :return:
+    """
+    red = [x for x in txt]
+    ind = []
+    for letter, inde in zip(txt, range(0, len(txt))):
+        condition = is_emoji(letter)
+        if condition:
+            ind.append(inde)
+    for x in ind:
+        red[x] = "_"
+    return "".join(red)

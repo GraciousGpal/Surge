@@ -3,7 +3,7 @@ from discord import Embed
 from discord.ext import commands
 from prettytable import PrettyTable
 from datetime import datetime
-from Core import transaction, search, Query, create_player , emb
+from Core import transaction, search, Query, create_player, emb, emoji_norm
 
 
 class Economy:
@@ -116,7 +116,8 @@ class Economy:
             x.add_row(["..........", "..........", ".........."])
             for member in mini_list:
                 if member.id == ctx.author.id:
-                    x.add_row([int(author - 3 + mini_list.index(member)), "->>" + member.name + "<<-", member.moolah])
+                    x.add_row([int(author - 3 + mini_list.index(member)), "->>" + emoji_norm(member.name, "_") + "<<-",
+                               member.moolah])
                 else:
                     x.add_row([int(author - 3 + mini_list.index(member)), member.name, member.moolah])
         await ctx.send('```{}```'.format(x))

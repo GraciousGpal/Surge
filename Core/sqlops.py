@@ -1,7 +1,8 @@
 import logging
 from datetime import datetime
 
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, CheckConstraint, Boolean , create_engine , BigInteger
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, CheckConstraint, Boolean, create_engine, \
+    BigInteger
 from sqlalchemy import exists, event
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
@@ -12,7 +13,7 @@ Base = declarative_base()
 
 # Create an engine that stores data in the local directory's
 # sqlalchemy_example.db file.
-#engine = create_engine('sqlite:///data/data.db')
+# engine = create_engine('sqlite:///data/data.db')
 engine = create_engine('postgres://ooyzljuy:zF1JjlBWVrffdVUEhlhuroyUzspvU6ws@manny.db.elephantsql.com:5432/ooyzljuy')
 
 # Bind the engine to the metadata of the Base class so that the
@@ -129,6 +130,7 @@ class Auction(Base):
     player = relationship("Player")
     item = relationship("Item")
 
+
 async def create_player(ctx, class_m):
     if class_m is None:
         await ctx.send(
@@ -199,23 +201,23 @@ def dataCheck(self):
 
 
 def create_full_table(self):
-    #Base.metadata.drop_all(engine)
-    #Base.metadata.create_all(engine)
+    # Base.metadata.drop_all(engine)
+    # Base.metadata.create_all(engine)
     for server in self.guilds:
         if session.query(Guild).filter_by(id=server.id).first() is None:
             try:
                 guildz = Guild(id=server.id, name=server.name)
                 session.add(guildz)
-                #session.commit()
+                # session.commit()
             except IntegrityError as e:
                 logging.error(e)
         for member in server.members:
             if session.query(User).filter_by(id=member.id).first() is None:
                 try:
-                    #logging.info(member.id)
+                    # logging.info(member.id)
                     user = User(id=member.id, name=member.name, moolah=0)
                     session.add(user)
-                    #session.commit()
+                    # session.commit()
                 except IntegrityError as e:
                     logging.error(e)
                     session.rollback()
@@ -340,8 +342,7 @@ class Query:
         elif orderby == 'price':
             col_a = self.type.price
 
-
-        if order == "desc" and number=="special":
+        if order == "desc" and number == "special":
             colum_q = session.query(self.type).order_by(col_a.desc())
             return colum_q
         elif order == 'desc':
