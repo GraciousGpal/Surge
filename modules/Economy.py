@@ -107,7 +107,11 @@ class Economy:
         lis_form = list(test)
         author = [x.id for x in lis_form]
         for item in test:
-            x.add_row([int(lis_form.index(item) + 1), "->>" + emoji_norm(item.name, "_") + "<<-", item.moolah])
+            if ctx.author.name == item.name:
+                name = "->>" + emoji_norm(item.name, "_") + "<<-"
+            else:
+                name = emoji_norm(item.name, "_")
+            x.add_row([int(lis_form.index(item) + 1), name, item.moolah])
 
         if ctx.author.id not in author:
             test1 = list(Query(types='user').get('all', 'moolah', 'desc'))
@@ -120,7 +124,15 @@ class Economy:
                                member.moolah])
                 else:
                     x.add_row([int(author - 3 + mini_list.index(member)), member.name, member.moolah])
-        await ctx.send('```{}```'.format(x))
+        logo = ''' _____               _             
+|_   _|             | |            
+  | | ___  _ __   __| | ___   __ _ 
+  | |/ _ \| '_ \ / _` |/ _ \ / _` |
+  | | (_) | |_) | (_| | (_) | (_| |
+  \_/\___/| .__/ \__,_|\___/ \__, |
+          | |                 __/ |
+          |_|                |___/ \n'''
+        await ctx.send('```{}{}```'.format(logo, x))
 
     @commands.command()
     async def role(self, ctx, action=None, role_name=None):
