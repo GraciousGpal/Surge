@@ -18,7 +18,7 @@ def write(location, data):
 
 
 def load(location):
-    with open(location) as data_file:
+    with open(location, 'r') as data_file:
         data = json.load(data_file)
         return data
 
@@ -149,7 +149,7 @@ def check_folders():
 def check_files():
     f = "data/member_logger/settings.json"
     try:
-        x = load(f)
+        load(f)
     except ValueError:
         print("Creating default member_logger settings.json...")
         write(f, {})
