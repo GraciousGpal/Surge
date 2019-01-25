@@ -135,7 +135,7 @@ class Economy:
                | $$                        /$$  \ $$
                | $$                       |  $$$$$$/
                |__/                        \______/ \n'''.replace("$", "M")
-        await ctx.send('```{}{}```'.format(logo, x))
+        await ctx.send('```c\n{}{}```'.format(logo, x))
 
     @commands.command()
     async def role(self, ctx, action=None, role_name=None):
