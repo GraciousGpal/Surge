@@ -107,7 +107,7 @@ class Economy:
         lis_form = list(test)
         author = [x.id for x in lis_form]
         for item in test:
-            x.add_row([int(lis_form.index(item) + 1), item.name, item.moolah])
+            x.add_row([int(lis_form.index(item) + 1), "->>" + emoji_norm(item.name, "_") + "<<-", item.moolah])
 
         if ctx.author.id not in author:
             test1 = list(Query(types='user').get('all', 'moolah', 'desc'))
