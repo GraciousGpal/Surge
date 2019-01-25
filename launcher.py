@@ -172,12 +172,4 @@ async def reboot(ctx):
     os.execl(sys.executable, os.path.abspath(__file__), *sys.argv)
 
 
-# Orginal
-os.environ['DISCORDAPI'] = 'NDQ2OTUyNzE2NzM3MDUyNjcy.DerJCA.AuN65sODFObrTeBUY3Ggovw3l1U'
-# Quinny
-# os.environ['DISCORDAPI'] = 'NTAwNTI4NzY0MDk5NDkzODkw.DqMJag.lHqZmQCQVyFpS5lEJfHpqahawaQ'
-os.environ['compiler_clientId'] = '14444bf7dedc244050166a77295bc61c'
-os.environ[
-    'compiler_clientSecret'] = "b9d5a80a216692a45d2d26ef294a20d43ffa4762b54ea980de9e28cffda43fcf"
-os.environ['DROPBOXAPI'] = ""
 bot.run(os.environ['DISCORDAPI'], bot=True, reconnect=True)
