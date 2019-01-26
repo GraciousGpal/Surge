@@ -1,1 +1,1 @@
-{"datapath": "data/member_logger/data.csv", "namepath": "data/member_logger/names.csv", "database": ""}
+{"datapath": "data/member_logger/data.csv", "namepath": "data/member_logger/names.csv", "database": "sqlite:///data/member_logger/datadb.db"}

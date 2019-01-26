@@ -4,3 +4,7 @@ __pycache__
 env
 *.pyc
 keys.py
+decom
+data
+test*
+data.zip

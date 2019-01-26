@@ -9,7 +9,7 @@ from discord.ext import commands
 import pandas
 from sqlalchemy import create_engine
 
-DB_UPDATE_INTERVAL = 60 * 30  # Every 30 minutes
+DB_UPDATE_INTERVAL = 5 # Every 30 minutes
 
 
 def write(location, data):
@@ -77,7 +77,7 @@ class MemberLogger:
 
     async def update_database(self):
         while True:
-            print("Updating database at {}".format(int(time.time())))
+            #print("Updating database at {}".format(int(time.time())))
             await self.bot.loop.run_in_executor(None, functools.partial(self.data.to_sql, 'member_data', self.engine,
                                                                         if_exists='replace'))
             await self.bot.loop.run_in_executor(None, functools.partial(self.names.to_sql, 'member_names', self.engine,
@@ -85,7 +85,7 @@ class MemberLogger:
 
             # self.data.to_sql('member_data', self.engine, if_exists='replace')
             # self.names.to_sql('member_names', self.engine, if_exists='replace')
-            print("Done updating database...")
+            #print("Done updating database...")
             await asyncio.sleep(DB_UPDATE_INTERVAL)
 
     def __unload(self):
@@ -103,41 +103,41 @@ class MemberLogger:
         if message.author.id not in self.names["member"].apply(str).values:
             self.update_names(pandas.Series({"member": message.author.id, "username": message.author.name}))
 
-    async def on_voice_state_update_(self, before, after):
-        if before.bot or after.bot:
+    async def on_voice_state_update_(self, member, before, after):
+        if member.bot:
             return
 
-        bvchan = before.voice.voice_channel
-        avchan = after.voice.voice_channel
+        bvchan = before.channel
+        avchan = after.channel
 
         if bvchan != avchan:
             # went from no channel to a channel
             if bvchan is None and avchan is not None:
                 # came online
                 entry = pandas.Series(
-                    {"member": after.id,
-                     "present": [m.id for m in avchan.voice_members if not m.bot and m.id != after.id]},
+                    {"member": member.id,
+                     "present": [m.id for m in avchan.voice_members if not m.bot and m.id != member.id]},
                     name=int(time.time()))
                 self.update_data(entry)
                 if after.id not in self.names["member"].apply(str).values:
-                    self.update_names(pandas.Series({"member": after.id, "username": after.name}))
+                    self.update_names(pandas.Series({"member": member.id, "username": member.name}))
 
     @commands.command(pass_context=True)
     async def update_namemap(self, ctx):
-        server = ctx.message.server
+        server = ctx.message.guild
         for uid in set(
                 self.data["member"].append(pandas.Series([str(st) for row in self.data["present"] for st in row]))):
             uid = str(uid)
             if uid not in self.names["member"].apply(str).values:
                 user = server.get_member(uid)
                 self.update_names(pandas.Series({"member": uid, "username": user.name}))
-        await self.bot.say("Namemap successfully updated!")
+        await ctx.send("Namemap successfully updated!")
 
     @commands.command(pass_context=True)
     async def set_database_url(self, ctx, url):
         self.settings["database"] = url
         write(self.settings_path, self.settings)
-        await self.bot.say("Database URL successfully changed.")
+        await ctx.send("Database URL successfully changed.")
 
 
 def check_folders():

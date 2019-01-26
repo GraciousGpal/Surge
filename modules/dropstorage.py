@@ -40,14 +40,19 @@ class dropboxstorage:
         self.bot = bot
         self.modname = "dropboxstorage"
         self.Description = "BacksUp Data to a Dropbox Server"
+        self.provision = self.bot.loop.create_task(self.BnU())
 
-    async def on_ready(self):
+    async def BnU(self):
+        """
+        Continuous function that restores and backs up
+        :return:
+        """
+        restore("data.zip", "/data.zip")
+        unzip()
+        await self.bot.wait_until_ready()
         while True:
-            restore("data.zip", "/data.zip")
-            unzip()
-            await asyncio.sleep(1300)
-            folderzipupload("data")
-
+            await asyncio.sleep(60*15)
+            await folderzipupload("data")
 
 def restore(file, path):
     # Download the specific revision of the file at BACKUPPATH to LOCALFILE
@@ -65,14 +70,14 @@ def restore(file, path):
         logging.warning("Ignoring and continuing ..")
 
 
-def backup(file, path):
+async def backup(file, path):
     with open(file, 'rb') as f:
         # We use WriteMode=overwrite to make sure that the settings in the file
         # are changed on upload
         logging.info("Uploading " + file + " to Dropbox as " + path + "...")
         try:
             try:
-                dbx.files_delete(path)
+                dbx.files_delete_v2(path)
             except:
                 pass
             dbx.files_upload(f.read(), path, mode=dropbox.files.WriteMode.overwrite)
@@ -91,7 +96,7 @@ def backup(file, path):
                 sys.exit()
 
 
-def folderzipupload(file):
+async def folderzipupload(file):
     shutil.make_archive("data", 'zip', local_dir)
     path = "/data.zip"
     with open("data.zip", 'rb') as f:
@@ -100,7 +105,7 @@ def folderzipupload(file):
         logging.info("Uploading " + file + " to Dropbox as " + path + "...")
         try:
             try:
-                dbx.files_delete(path)
+                dbx.files_delete_v2(path)
             except:
                 pass
             dbx.files_upload(f.read(), path, mode=dropbox.files.WriteMode.overwrite)
@@ -127,10 +132,14 @@ def unzip():
         for name in z.namelist():
             outpath = "data//"
             z.extract(name, outpath)
-        os.remove("data.zip")
         logging.info("Extracted data.zip ")
-    except:
-        logging.error("Error Occurred While extracting!.")
+    except Exception as e :
+        logging.error(e)
+
+    try:
+        os.remove("data.zip")
+    except Exception as e:
+        logging.error(e)
 
 
 def setup(bot):

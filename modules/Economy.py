@@ -123,7 +123,8 @@ class Economy:
                                member.moolah])
                 else:
                     x.add_row([int(author - 3 + mini_list.index(member)), member.name, member.moolah])
-        logo = '''c\n /$$$$$$$$                     /$$                  
+        logo = '''
+         /$$$$$$$$                     /$$                  
 |__  $$__/                    | $$                  
    | $$ /$$$$$$  /$$$$$$  /$$$$$$$ /$$$$$$  /$$$$$$ 
    | $$/$$__  $$/$$__  $$/$$__  $$/$$__  $$/$$__  $$
@@ -134,7 +135,7 @@ class Economy:
                | $$                        /$$  \ $$
                | $$                       |  $$$$$$/
                |__/                        \______/ \n'''.replace("$", "M")
-        await ctx.send('```c/n{}{}```'.format(logo, x))
+        await ctx.send('```c\n{}{}```'.format(logo, x))
 
     @commands.command()
     async def role(self, ctx, action=None, role_name=None):
