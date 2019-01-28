@@ -5,7 +5,7 @@ import sys
 import discord
 from discord.ext import commands
 
-from Core import dataCheck, Guild, session, User, emb, create_full_table
+from Core import dataCheck, Guild, session, User, emb
 from Core.preboot import *
 
 
@@ -61,7 +61,7 @@ class MyClient(commands.Bot):
             await asyncio.sleep(10)
 
     async def on_ready(self):
-        #create_full_table(self)
+        # create_full_table(self)
         checksettings(self)
 
         # Initial module Loading..

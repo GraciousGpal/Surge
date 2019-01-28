@@ -1,15 +1,15 @@
-import os
-import time
-from ast import literal_eval
 import asyncio
 import functools
 import json
-import discord
-from discord.ext import commands
+import os
+import time
+from ast import literal_eval
+
 import pandas
+from discord.ext import commands
 from sqlalchemy import create_engine
 
-DB_UPDATE_INTERVAL = 5 # Every 30 minutes
+DB_UPDATE_INTERVAL = 5  # Every 30 minutes
 
 
 def write(location, data):
@@ -77,7 +77,7 @@ class MemberLogger:
 
     async def update_database(self):
         while True:
-            #print("Updating database at {}".format(int(time.time())))
+            # print("Updating database at {}".format(int(time.time())))
             await self.bot.loop.run_in_executor(None, functools.partial(self.data.to_sql, 'member_data', self.engine,
                                                                         if_exists='replace'))
             await self.bot.loop.run_in_executor(None, functools.partial(self.names.to_sql, 'member_names', self.engine,
@@ -85,7 +85,7 @@ class MemberLogger:
 
             # self.data.to_sql('member_data', self.engine, if_exists='replace')
             # self.names.to_sql('member_names', self.engine, if_exists='replace')
-            #print("Done updating database...")
+            # print("Done updating database...")
             await asyncio.sleep(DB_UPDATE_INTERVAL)
 
     def __unload(self):
