@@ -123,7 +123,7 @@ class Economy:
                                member.moolah])
                 else:
                     x.add_row([int(author - 3 + mini_list.index(member)), member.name, member.moolah])
-        logo = '''/$$$$$$$$                     /$$                  
+        logo = ''' /$$$$$$$$                     /$$                  
 |__  $$__/                    | $$                  
    | $$ /$$$$$$  /$$$$$$  /$$$$$$$ /$$$$$$  /$$$$$$ 
    | $$/$$__  $$/$$__  $$/$$__  $$/$$__  $$/$$__  $$
