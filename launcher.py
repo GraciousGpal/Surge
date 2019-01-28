@@ -68,6 +68,9 @@ class MyClient(commands.Bot):
         plist = [f for f in os.listdir('modules') if ".py" in f]
         if '__init__.py' in plist:
             plist.remove("__init__.py")
+
+        #load backup first
+        plist.insert(0, plist.pop(plist.index('dropstorage.py')))
         [load_mods('modules' + "." + f.replace(".py", ""), self) for f in plist]
 
         # Check Data integrity
