@@ -41,14 +41,14 @@ class dropboxstorage:
         self.modname = "dropboxstorage"
         self.Description = "BacksUp Data to a Dropbox Server"
         self.provision = self.bot.loop.create_task(self.BnU())
+        restore("data.zip", "/data.zip")
+        unzip()
 
     async def BnU(self):
         """
         Continuous function that restores and backs up
         :return:
         """
-        restore("data.zip", "/data.zip")
-        unzip()
         await self.bot.wait_until_ready()
         while True:
             await asyncio.sleep(60*15)
