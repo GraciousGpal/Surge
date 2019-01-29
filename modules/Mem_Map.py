@@ -1,7 +1,8 @@
 import json
+import logging
 import os
 import time
-import logging
+
 from sqlalchemy import Column, String, BIGINT, Integer, Boolean
 from sqlalchemy import create_engine
 from sqlalchemy.ext.compiler import compiles
@@ -80,7 +81,7 @@ class MemberLogger:
         if message.author.bot or not message.mentions or message.mention_everyone:
             return
         mentions = [m.id for m in message.mentions if not m.bot and m.id != message.author.id]
-        if len(mentions) == 0 :
+        if len(mentions) == 0:
             return
         data = MapDataVoice(time=int(time.time()), member=message.author.id,
                             present=str(mentions),
@@ -99,9 +100,11 @@ class MemberLogger:
             # went from no channel to a channel
             if bvchan is None and avchan is not None:
                 # came online
+                members = [m.id for m in avchan.members if not m.bot and m.id != member.id]
+                if len(members) == 0:
+                    return
                 data = MapDataVoice(time=int(time.time()), member=member.id,
-                                    present=str(
-                                        [m.id for m in avchan.members if not m.bot and m.id != member.id]))
+                                    present=str(members))
                 self.session.add(data)
                 self.session.commit()
 
