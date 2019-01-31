@@ -192,7 +192,7 @@ def hello():
 
 
 # Make a partial app.run to pass args/kwargs to it
-partial_run = partial(app.run, host="0.0.0.0", port=80, debug=True, use_reloader=False)
+partial_run = partial(app.run, host="0.0.0.0", port=os.environ['PORT'], debug=True, use_reloader=False)
 
 # Run the Flask app in another thread.
 # Unfortunately this means we can't have hot reload
