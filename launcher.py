@@ -1,4 +1,5 @@
 import asyncio
+import glob
 import random
 import sys
 from functools import partial
@@ -6,7 +7,7 @@ from threading import Thread
 
 import discord
 from discord.ext import commands
-from flask import Flask
+from flask import Flask, render_template_string
 
 from Core import dataCheck, Guild, session, User, emb
 from Core.preboot import *
@@ -191,6 +192,20 @@ def hello():
         return "None"
 
 
+@app.route("/logs")
+def logs():
+    list_of_files = glob.glob('data/logs/console/*')  # * means all if need specific format then *.csv
+    latest_file = max(list_of_files, key=os.path.getctime)
+    with open(latest_file, "r") as f:
+        text = ""
+        for line in f:
+            text += line+"<br/>"
+        return render_template_string('''<html>
+    <head>
+        <title>HTML in 10 Simple Steps or Less</title>
+        <meta http-equiv="refresh" content="5" >
+    </head>
+    <p>{}</p></html>'''.format(text), mimetype='text/plain')
 
 
 # Make a partial app.run to pass args/kwargs to it
