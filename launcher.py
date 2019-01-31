@@ -184,9 +184,11 @@ async def reboot(ctx):
 # Set up the 'index' route
 @app.route("/")
 def hello():
-    text = "<p>______________________________________________<br />" + f'Logged in as: {bot.user.name} - {bot.user.id}<br />' + f"Framework Version: {discord.__version__} <br />" + f'Successfully logged in and booted...!</p>'
-
-    return text
+    try:
+        text = "<p>______________________________________________<br />" + f'Logged in as: {bot.user.name} - {bot.user.id}<br />' + f"Framework Version: {discord.__version__} <br />" + f'Successfully logged in and booted...!</p>'
+        return text
+    except Exception as e:
+        return "None"
 
 
 
