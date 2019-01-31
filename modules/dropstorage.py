@@ -58,30 +58,30 @@ def restore(file, path):
     # Download the specific revision of the file at BACKUPPATH to LOCALFILE
     try:
         os.remove(file)
-        logging.info("[USER.db] Detected Removing.....Done")
+        logger.info("[USER.db] Detected Removing.....Done")
     except OSError:
-        logging.warning("OSError")
+        logger.warning("OSError")
         pass
     try:
-        logging.info("Downloading current " + path + " from Dropbox, overwriting " + file + "...")
+        logger.info("Downloading current " + path + " from Dropbox, overwriting " + file + "...")
         dbx.files_download_to_file(file, path)
     except:
-        logging.warning("RESTORE FAILED NO DATABASE!!")
-        logging.warning("Ignoring and continuing ..")
+        logger.warning("RESTORE FAILED NO DATABASE!!")
+        logger.warning("Ignoring and continuing ..")
 
 
 async def backup(file, path):
     with open(file, 'rb') as f:
         # We use WriteMode=overwrite to make sure that the settings in the file
         # are changed on upload
-        logging.info("Uploading " + file + " to Dropbox as " + path + "...")
+        logger.info("Uploading " + file + " to Dropbox as " + path + "...")
         try:
             try:
                 dbx.files_delete_v2(path)
             except:
                 pass
             dbx.files_upload(f.read(), path, mode=dropbox.files.WriteMode.overwrite)
-            logging.info("Uploaded!")
+            logger.info("Uploaded!")
         except ApiError as err:
             # This checks for the specific error where a user doesn't have
             # enough Dropbox space quota to upload this file
@@ -89,10 +89,10 @@ async def backup(file, path):
                     err.error.get_path().error.is_insufficient_space()):
                 sys.exit("ERROR: Cannot back up; insufficient space.")
             elif err.user_message_text:
-                logging.warning(err.user_message_text)
+                logger.warning(err.user_message_text)
                 sys.exit()
             else:
-                logging.warning(err)
+                logger.warning(err)
                 sys.exit()
 
 
@@ -102,14 +102,14 @@ async def folderzipupload(file):
     with open("data.zip", 'rb') as f:
         #  We use WriteMode=overwrite to make sure that the settings in the file
         #  are changed on upload
-        logging.info("Uploading " + file + " to Dropbox as " + path + "...")
+        logger.info("Uploading " + file + " to Dropbox as " + path + "...")
         try:
             try:
                 dbx.files_delete_v2(path)
             except:
                 pass
             dbx.files_upload(f.read(), path, mode=dropbox.files.WriteMode.overwrite)
-            logging.info("Uploaded!")
+            logger.info("Uploaded!")
         except ApiError as err:
             # This checks for the specific error where a user doesn't have
             # enough Dropbox space quota to upload this file
@@ -117,29 +117,29 @@ async def folderzipupload(file):
                     err.error.get_path().error.is_insufficient_space()):
                 sys.exit("ERROR: Cannot back up; insufficient space.")
             elif err.user_message_text:
-                logging.warning(err.user_message_text)
+                logger.warning(err.user_message_text)
                 sys.exit()
             else:
-                logging.warning(err)
+                logger.warning(err)
                 sys.exit()
 
 
 def unzip():
     try:
-        logging.info("Extracting data.zip ")
+        logger.info("Extracting data.zip ")
         fh = open('data.zip', 'rb')
         z = zipfile.ZipFile(fh)
         for name in z.namelist():
             outpath = "data//"
             z.extract(name, outpath)
-        logging.info("Extracted data.zip ")
+        logger.info("Extracted data.zip ")
     except Exception as e :
-        logging.error(e)
+        logger.error(e)
 
     try:
         os.remove("data.zip")
     except Exception as e:
-        logging.error(e)
+        logger.error(e)
 
 
 def setup(bot):

@@ -1,12 +1,18 @@
 import asyncio
 import random
 import sys
+from functools import partial
+from threading import Thread
 
 import discord
 from discord.ext import commands
+from flask import Flask
 
 from Core import dataCheck, Guild, session, User, emb
 from Core.preboot import *
+
+# Initialize our app and the bot itself
+app = Flask(__name__)
 
 
 def get_prefix(bot, message):
@@ -69,7 +75,7 @@ class MyClient(commands.Bot):
         if '__init__.py' in plist:
             plist.remove("__init__.py")
 
-        #load backup first
+        # load backup first
         plist.insert(0, plist.pop(plist.index('dropstorage.py')))
         [load_mods('modules' + "." + f.replace(".py", ""), self) for f in plist]
 
@@ -174,5 +180,26 @@ async def reboot(ctx):
     session.close()
     os.execl(sys.executable, os.path.abspath(__file__), *sys.argv)
 
+
+# Set up the 'index' route
+@app.route("/")
+def hello():
+    text = "<p>______________________________________________<br />" + f'Logged in as: {bot.user.name} - {bot.user.id}<br />' + f"Framework Version: {discord.__version__} <br />" + f'Successfully logged in and booted...!</p>'
+
+    return text
+
+
+
+
+# Make a partial app.run to pass args/kwargs to it
+partial_run = partial(app.run, host="0.0.0.0", port=80, debug=True, use_reloader=False)
+
+# Run the Flask app in another thread.
+# Unfortunately this means we can't have hot reload
+# (We turned it off above)
+# Because there's no signal support.
+
+t = Thread(target=partial_run)
+t.start()
 
 bot.run(os.environ['DISCORDAPI'], bot=True, reconnect=True)
