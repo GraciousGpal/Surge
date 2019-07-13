@@ -2,9 +2,10 @@ dropbox
 pandas
 tabulate
 emoji
-psycopg2
+psycopg2-binary
+pymysql
 requests
--e git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py[voice]
+discord.py[voice]
 prettytable
 sqlalchemy
 flask

@@ -2,20 +2,35 @@ import asyncio
 import glob
 import random
 import sys
-from functools import partial
-from threading import Thread
 
 import discord
+import numpy as np
+import pandas
 from discord.ext import commands
 from flask import Flask, render_template_string
 
-from Core import dataCheck, Guild, session, User, emb
+from Core import dataCheck, Guild, session, emb, create_full_table, Player
 from Core.preboot import *
 
 # Initialize our app and the bot itself
 app = Flask(__name__)
 
 
+def load_ProfData():  # Level-Location-Profession
+    dt = pandas.read_csv('Core/Game/Profession_Item_drop.csv',
+                         names=["Level", "Location", "Lumberjack", "Miner", "Herbalism"],
+                         skiprows=1).T.to_dict()
+
+    lvl_dt = pandas.read_csv('Core/Game/Profession_xp.csv', names=["Level", "Xp Requirement"],
+                             skiprows=1).T.to_dict()
+    lvl_data = {x: lvl_dt[x]['Xp Requirement'] for x in lvl_dt if lvl_dt[x]['Xp Requirement'] is not np.nan}
+    dt = {x: dt[x] for x in dt if dt[x]['Location'] is not np.nan}
+    dt['level_data'] = lvl_data
+    return dt
+
+
+# print(load_ProfData())
+# sys.exit()
 def get_prefix(bot, message):
     """This allows custom prefix per server."""
 
@@ -50,9 +65,10 @@ def load_mods(extension: str, self):
 class MyClient(commands.Bot):
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)  #
-        self.Settings = {}  # Bot Settings
+        super().__init__(*args, **kwargs)
         self.master = {}
+        self.Settings = {}  # Bot Settings
+        self.master["ProfData"] = load_ProfData()
         self.loaded = []  # Lists loaded modules
 
         # create the background task and run it in the background
@@ -63,12 +79,13 @@ class MyClient(commands.Bot):
         message_list = [" {} people!.", "Ping pong with {} the crew", "Laser Tag with {} People"]
         while True:
             await self.change_presence(
-                activity=discord.Game(name=random.choice(message_list).format(session.query(User).count())))
+                activity=discord.Game(name=random.choice(message_list).format(session.query(Player).count())))
             # logging.info(self.loaded)
             await asyncio.sleep(10)
 
     async def on_ready(self):
-        # create_full_table(self)
+
+        create_full_table(self)
         checksettings(self)
 
         # Initial module Loading..
@@ -142,11 +159,7 @@ async def shutdown(ctx):
 @commands.is_owner()
 async def reload(ctx, extension):
     try:
-        bot.unload_extension("modules." + extension)
-    except  ModuleNotFoundError as e:
-        logging.error(e)
-    try:
-        bot.load_extension("modules." + extension)
+        bot.reload_extension("modules." + extension)
         await ctx.message.channel.send("Module [{}] reloaded!".format(extension))
     except (AttributeError, ImportError) as e:
         await ctx.message.channel.send("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
@@ -199,7 +212,7 @@ def logs():
     with open(latest_file, "r") as f:
         text = ""
         for line in f:
-            text += line+"<br/>"
+            text += line + "<br/>"
         return render_template_string('''<html>
     <head>
         <title>HTML in 10 Simple Steps or Less</title>
@@ -209,14 +222,16 @@ def logs():
 
 
 # Make a partial app.run to pass args/kwargs to it
-partial_run = partial(app.run, host="0.0.0.0", port=os.environ['PORT'], debug=True, use_reloader=False)
+# partial_run = partial(app.run, host="0.0.0.0", port=os.environ['PORT'], debug=True, use_reloader=False)
 
 # Run the Flask app in another thread.
 # Unfortunately this means we can't have hot reload
 # (We turned it off above)
 # Because there's no signal support.
 
-t = Thread(target=partial_run)
-t.start()
+# t = Thread(target=partial_run)
+# t.start()
+
+
 
 bot.run(os.environ['DISCORDAPI'], bot=True, reconnect=True)

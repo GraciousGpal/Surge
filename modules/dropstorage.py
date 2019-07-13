@@ -3,13 +3,13 @@ from __future__ import unicode_literals
 
 import asyncio
 import logging
-
 import os
 import shutil
 import sys
 import zipfile
 
 import dropbox
+from discord.ext import commands
 from dropbox.exceptions import ApiError
 from dropbox.files import WriteMode
 
@@ -35,7 +35,7 @@ def is_ignored(filename):
     return False
 
 
-class dropboxstorage:
+class dropboxstorage(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.modname = "dropboxstorage"

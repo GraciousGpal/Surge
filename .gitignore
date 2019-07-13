@@ -8,3 +8,5 @@ decom
 data
 test*
 data.zip
+venv
+*.db

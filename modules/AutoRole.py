@@ -9,8 +9,10 @@ from difflib import get_close_matches
 import discord
 from discord.ext import commands
 
+logg = logging.getLogger(__name__)
 
-class Autorole:
+
+class Autorole(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -42,13 +44,13 @@ class Autorole:
     async def on_member_join(self, member):
         if self.bot.master[str(member.guild.id)]["modules"]["Autorole"] is True:
             if not self.data:
-                logging.error("Warning Dict Empty for AutoRole!")
+                logg.error("Warning Dict Empty for AutoRole!")
                 self.data = json.load(open('data/AutoRole/AutoRole.json'))
             autorole = self.data[str(member.guild.id)]
             found = discord.utils.get(member.guild.roles, id=autorole)
-            logging.info("Adding {} to {}".format(found.name, member.name))
+            logg.info("Adding {} to {}".format(found.name, member.name))
             await member.add_roles(found, reason="Joined the Server")
-            logging.info("Added {} to {}".format(found.name, member.name))
+            logg.info("Added {} to {}".format(found.name, member.name))
 
 
 def setup(bot):

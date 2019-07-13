@@ -1,20 +1,23 @@
 import logging
+import os
 from datetime import datetime
 
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, CheckConstraint, Boolean, create_engine, \
     BigInteger
-from sqlalchemy import exists, event
+from sqlalchemy import exists
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker
+
+logg = logging.getLogger(__name__)
 
 Base = declarative_base()
 
 # Create an engine that stores data in the local directory's
 # sqlalchemy_example.db file.
 # engine = create_engine('sqlite:///data/data.db')
-engine = create_engine('postgres://ooyzljuy:zF1JjlBWVrffdVUEhlhuroyUzspvU6ws@manny.db.elephantsql.com:5432/ooyzljuy')
+engine = create_engine(os.environ['DB_CON_STRING'])
 
 # Bind the engine to the metadata of the Base class so that the
 # declaratives can be accessed through a DBSession instance
@@ -29,16 +32,6 @@ Base.metadata.bind = engine
 # session.rollback()
 session = sessionmaker(bind=engine)()
 
-'''
-# Sets WAL MODE on sqlite
-@event.listens_for(engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA journal_mode=WAL")
-    cursor.execute("PRAGMA temp_store = 2")
-    cursor.close()
-'''
-
 
 # SQL Models
 class Guild(Base):
@@ -50,14 +43,26 @@ class Guild(Base):
     modules = relationship("Module")
 
 
-class User(Base):
-    __tablename__ = 'Users'
-    # Here we define columns for the table User
-    # Notice that each column is also a normal Python instance attribute.
+class Player(Base):
+    __tablename__ = 'player'
     id = Column(BigInteger, primary_key=True)
-    name = Column(String, nullable=False)
-    moolah = Column(Integer, CheckConstraint('moolah >= 0'), nullable=False)
+    name = Column(String(32), nullable=False)
+    moolah = Column(BigInteger, CheckConstraint('moolah >= 0'), nullable=False)
     updated_on = Column(DateTime, nullable=False, default=datetime.now(), onupdate=datetime.now())
+    # ----------BASE----------#
+    profession = Column(String(32))
+    level = Column(Integer, default=0)
+    exp = Column(Integer, default=0)
+    location = Column(String(32))
+    # --------STATS-------- #
+    resource = Column(Integer, default=1)
+    craft = Column(Integer, default=1)
+    capacity = Column(Integer, default=10)
+    luck = Column(Integer, default=1)
+    # ----------COMBAT---------- #
+    atk = Column(Integer, default=1)
+    defence = Column(Integer, default=1)
+    inv = relationship("Inventory", back_populates="user")
 
 
 class Module(Base):
@@ -82,22 +87,8 @@ class Inventory(Base):
     item_id = Column(Integer, ForeignKey('item.id'), primary_key=True)
     quantity = Column(Integer)
     # ------------------------- #
+    user = relationship("Player", back_populates="inv")
     item = relationship("Item", back_populates="owners")
-    player = relationship("Player", back_populates="inv")
-
-
-class Player(Base):
-    __tablename__ = 'player'
-    id = Column(BigInteger, ForeignKey('Users.id'), primary_key=True)
-    # ----------BASE----------#
-    nclass = Column(String)
-    level = Column(Integer, default=0)
-    exp = Column(Integer, default=0)
-    atk = Column(Integer, default=1)
-    defence = Column(Integer, default=1)
-    # ------------------------- #
-    user = relationship("User")
-    inv = relationship("Inventory", back_populates="player")
 
 
 class Item(Base):
@@ -105,15 +96,16 @@ class Item(Base):
     id = Column(Integer, primary_key=True)
     # ----------BASE----------#
     name = Column(String(32), nullable=False)
-    description = Column(String)
-    base_value = Column(Integer)
+    types = Column(String(32), nullable=False)
+    description = Column(String(64))
+    base_value = Column(Integer, default=0)
     atk = Column(Integer, default=0)
     life = Column(Integer, default=0)
-    # --------ELEMENTS-------- #
-    water = Column(Integer, default=0)
-    air = Column(Integer, default=0)
-    earth = Column(Integer, default=0)
-    fire = Column(Integer, default=0)
+    # --------STATS-------- #
+    resource = Column(Integer, default=0)
+    craft = Column(Integer, default=0)
+    capacity = Column(Integer, default=0)
+    luck = Column(Integer, default=0)
     # ------------------------- #
     owners = relationship("Inventory", back_populates="item")
 
@@ -136,35 +128,35 @@ async def create_player(ctx, class_m):
         await ctx.send(
             "Select a class <e.g +create Miner>\n```Class List:{}```".format(["Miner", "Lumberjack", "Gatherer"]))
     try:
-        plyr = Player(id=ctx.author.id, nclass=class_m, level=0, exp=0, atk=0, defence=0)
+        plyr = Player(id=ctx.author.id, profession=class_m, level=0, exp=0, atk=0, defence=0)
         session.add(plyr)
         session.commit()
     except IntegrityError as e:
         await ctx.send("You have already created a character!.")
-        # logging.error(e)
+        # logg.error(e)
         session.rollback()
 
 
 def dataCheck(self):
-    logging.info('Checking Database entries..')
+    logg.info('Checking Database entries..')
     for server in self.guilds:
         if not session.query(exists().where(Guild.id == server.id)).scalar():
-            logging.error('Missing Data Detected!')
+            logg.error('Missing Data Detected!')
             try:
                 guild = Guild(id=server.id, name=server.name)
                 session.add(guild)
                 session.commit()
             except IntegrityError as e:
-                logging.error('Guild Entry Error')
+                logg.error('Guild Entry Error')
                 session.rollback()
         for member in server.members:
             # print(member.name,session.query(exists().where(User.id == member.id)).scalar())
-            if not session.query(exists().where(User.id == member.id)).scalar():
+            if not session.query(exists().where(Player.id == member.id)).scalar():
                 try:
-                    user = User(id=member.id, name=member.name, moolah=0)
+                    user = Player(id=member.id, name=member.name, moolah=0)
                     session.add(user)
                 except IntegrityError as e:
-                    logging.error('User Entry Error')
+                    logg.error('User Entry Error')
                     session.rollback()
         for roles in server.roles:
             if not session.query(exists().where(Role.id == roles.id)).scalar():
@@ -172,7 +164,7 @@ def dataCheck(self):
                     channelz = Role(id=roles.id, guild_id=server.id)
                     session.add(channelz)
                 except IntegrityError as e:
-                    logging.error('Role Entry Error')
+                    logg.error('Role Entry Error')
                     session.rollback()
         try:
             serverd = self.master[server.id]
@@ -202,7 +194,8 @@ def dataCheck(self):
 
 def create_full_table(self):
     # Base.metadata.drop_all(engine)
-    # Base.metadata.create_all(engine)
+    Base.metadata.create_all(engine)
+    logg.info("Filling Tables ...")
     for server in self.guilds:
         if session.query(Guild).filter_by(id=server.id).first() is None:
             try:
@@ -210,26 +203,68 @@ def create_full_table(self):
                 session.add(guildz)
                 # session.commit()
             except IntegrityError as e:
-                logging.error(e)
+                logg.error(e)
+
         for member in server.members:
-            if session.query(User).filter_by(id=member.id).first() is None:
+            if session.query(Player).filter_by(id=member.id).first() is None:
                 try:
-                    # logging.info(member.id)
-                    user = User(id=member.id, name=member.name, moolah=0)
+                    # logg.info(member.id)
+                    user = Player(id=member.id, name=member.name, moolah=0)
                     session.add(user)
                     # session.commit()
                 except IntegrityError as e:
-                    logging.error(e)
+                    logg.error(e)
                     session.rollback()
+
         for roles in server.roles:
             if session.query(Role).filter_by(id=roles.id).first() is None:
                 try:
                     channelz = Role(id=roles.id, guild_id=server.id)
                     session.add(channelz)
                 except IntegrityError as e:
-                    logging.error(e)
+                    logg.error(e)
                     session.rollback()
-    logging.info("Table Creation finished!")
+
+        for item in [self.master["ProfData"][level] for level in self.master["ProfData"]]:
+            for key in item:
+                if key == 'Location' or str(key).isdigit() or key == 'Level':
+                    continue
+                if session.query(Item).filter_by(name=item[key]).first() is None:
+                    try:
+                        itemz = Item(name=item[key], types='Resource', description='needs work',
+                                     base_value=item['Level'] * 100)
+                        session.add(itemz)
+                    except IntegrityError as e:
+                        logg.error(e)
+                        session.rollback()
+
+        '''
+        self.master["ProfData"]['Itemlist'] = []
+        for item in self.master["ProfData"].copy():
+            try:
+                lol = self.master["ProfData"]['Itemlist']
+                #print(self.master["ProfData"][item]['Lumberjack'])
+                lumberjack = {'name': self.master["ProfData"][item]['Lumberjack'], 'type': 'Resource'}
+                miner = {'name': self.master["ProfData"][item]['Miner'], 'type': 'Resource'}
+                herb = {'name': self.master["ProfData"][item]['Herbalism'], 'type': 'Resource'}
+                lol.append(lumberjack)
+                lol.append(miner)
+                lol.append(herb)
+            except Exception as e:
+                logg.error(e)
+                pass
+        #print(self.master["ProfData"]['Itemlist'])
+        for item in self.master["ProfData"]['Itemlist']:
+            if session.query(Item).filter_by(name=item).first() is None:
+                print(str(item['name']))
+                try:
+                    Itemz = Item(name=str(item['name']), types=str(item['type']), description='need work')
+                    session.add(Itemz)
+                except IntegrityError as e:
+                    logg.error(e)
+                    session.rollback()'''
+
+    logg.info("Table Creation finished!")
     session.commit()
 
 
@@ -242,11 +277,11 @@ class transaction:
     def add(self, amount):
         self.inputSanitation(amount)
         try:
-            user = session.query(User).filter(User.id == self.usr.id).first()
+            user = session.query(Player).filter(Player.id == self.usr.id).first()
             user.moolah += self.transaction
             session.commit()
         except SQLAlchemyError as e:
-            logging.error(e)
+            logg.error(e)
         finally:
             session.close()
 
@@ -254,7 +289,7 @@ class transaction:
         self.inputSanitation(amount)
         self.hasenough(self.transaction)
         try:
-            user = session.query(User).filter(User.id == self.usr.id).first()
+            user = session.query(Player).filter(Player.id == self.usr.id).first()
 
             if user.moolah < self.transaction:
                 user.moolah = 0
@@ -263,18 +298,18 @@ class transaction:
 
             session.commit()
         except SQLAlchemyError as e:
-            logging.error(e)
+            logg.error(e)
         finally:
             session.close()
 
     def set(self, amount):
         self.inputSanitation(amount)
         try:
-            user = session.query(User).filter(User.id == self.usr.id).first()
+            user = session.query(Player).filter(Player.id == self.usr.id).first()
             user.moolah = self.transaction
             session.commit()
         except SQLAlchemyError as e:
-            logging.error(e)
+            logg.error(e)
         finally:
             session.close()
 
@@ -282,7 +317,7 @@ class transaction:
         class InsufficientFunds(Exception):
             pass
 
-        user = session.query(User).filter(User.id == self.usr.id).first()
+        user = session.query(Player).filter(Player.id == self.usr.id).first()
         if user.moolah < amount:
             raise InsufficientFunds("{} in Balance, transaction {}".format(user.moolah, amount))
         else:
@@ -303,10 +338,8 @@ class OverflownError(Exception):
 
 
 class Query:
-    def __init__(self, types='user', obj=None):
-        if types == 'user':
-            self.type = User
-        elif types == 'player':
+    def __init__(self, types='player', obj=None):
+        if types == 'player':
             self.type = Player
         elif types == 'guild':
             self.type = Guild

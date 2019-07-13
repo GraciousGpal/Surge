@@ -3,6 +3,7 @@ import logging
 import os
 import time
 
+from discord.ext import commands
 from sqlalchemy import Column, String, BIGINT, Integer, Boolean
 from sqlalchemy import create_engine
 from sqlalchemy.ext.compiler import compiles
@@ -10,6 +11,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.schema import CreateColumn
 
+logg = logging.getLogger(__name__)
 
 def write(location, data):
     with open(location, 'w') as outfile:
@@ -27,13 +29,13 @@ def check_files():
     try:
         load(f)
     except Exception:
-        logging.info("Creating default member_logger settings.json...")
+        logg.info("Creating default member_logger settings.json...")
         write(f, {})
 
 
 def check_folders():
     if not os.path.exists("data/member_logger"):
-        logging.info("Creating data/member_logger folder...")
+        logg.info("Creating data/member_logger folder...")
         os.makedirs("data/member_logger")
 
 
@@ -56,7 +58,7 @@ class MapDataVoice(Base):
     type = Column(Boolean, default=True)
 
 
-class MemberLogger:
+class MemberLogger(commands.Cog):
     """ Gathers information on when users interact with each other. Can be used for later statistical analysis """
 
     def __init__(self, bot):
@@ -71,7 +73,7 @@ class MemberLogger:
         self.engine = None
         self.task = None
         if self.settings["database"]:
-            logging.info("MemberLogDatabase info found...")
+            logg.info("MemberLogDatabase info found...")
             self.engine = create_engine(self.settings["database"])
             Base.metadata.bind = self.engine
             self.session = sessionmaker(bind=self.engine)()

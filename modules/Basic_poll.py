@@ -5,7 +5,7 @@ from discord.ext import commands
 settings = {"POLL_DURATION": 36000}
 
 
-class Pollplus:
+class Pollplus(commands.Cog):
     """Poll+ commands."""
 
     def __init__(self, bot):
