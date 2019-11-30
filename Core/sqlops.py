@@ -46,7 +46,7 @@ class Guild(Base):
 class Player(Base):
     __tablename__ = 'player'
     id = Column(BigInteger, primary_key=True)
-    name = Column(String(32), nullable=False)
+    #name = Column(String(32), nullable=False)
     moolah = Column(BigInteger, CheckConstraint('moolah >= 0'), nullable=False)
     updated_on = Column(DateTime, nullable=False, default=datetime.now(), onupdate=datetime.now())
     # ----------BASE----------#
@@ -153,7 +153,7 @@ def dataCheck(self):
             # print(member.name,session.query(exists().where(User.id == member.id)).scalar())
             if not session.query(exists().where(Player.id == member.id)).scalar():
                 try:
-                    user = Player(id=member.id, name=member.name, moolah=0)
+                    user = Player(id=member.id, moolah=0)
                     session.add(user)
                 except IntegrityError as e:
                     logg.error('User Entry Error')
@@ -209,7 +209,7 @@ def create_full_table(self):
             if session.query(Player).filter_by(id=member.id).first() is None:
                 try:
                     # logg.info(member.id)
-                    user = Player(id=member.id, name=str(member.name), moolah=0)
+                    user = Player(id=member.id, moolah=0)
                     session.add(user)
                     # session.commit()
                 except IntegrityError as e:
