@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import pandas
 
-from Core import session, Player
+from Core.sqlops import session, Player
 
 logg = logging.getLogger(__name__)
 
