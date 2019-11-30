@@ -193,7 +193,7 @@ def dataCheck(self):
 
 
 def create_full_table(self):
-    # Base.metadata.drop_all(engine)
+    #Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     logg.info("Filling Tables ...")
     for server in self.guilds:
@@ -209,7 +209,7 @@ def create_full_table(self):
             if session.query(Player).filter_by(id=member.id).first() is None:
                 try:
                     # logg.info(member.id)
-                    user = Player(id=member.id, name=member.name, moolah=0)
+                    user = Player(id=member.id, name=str(member.name), moolah=0)
                     session.add(user)
                     # session.commit()
                 except IntegrityError as e:
