@@ -50,7 +50,7 @@ class Player(Base):
     moolah = Column(BigInteger, CheckConstraint('moolah >= 0'), nullable=False)
     updated_on = Column(DateTime, nullable=False, default=datetime.now(), onupdate=datetime.now())
     # ----------BASE----------#
-    profession = Column(String(32))
+    profession = Column(String(32), default=None)
     level = Column(Integer, default=0)
     exp = Column(Integer, default=0)
     location = Column(String(32))
