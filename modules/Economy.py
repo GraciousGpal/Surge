@@ -128,7 +128,7 @@ class Economy(commands.Cog):
             " __* **Gatherer Professions:** *__\n**[1] Miner**\n**[2] Lumberjack**\n**[3] Gatherer**\n__* **Crafting Professions** *__\n**[4] Smith**\n**[5] Outfitter**\n**[6] Chef**\n Choose Your Profession(1-6)")
 
         try:
-            msg = await ctx.wait_for('message', timeout=60.0)
+            msg = await self.bot.wait_for('message', timeout=60.0)
         except asyncio.TimeoutError:
             await ctx.send('Too much time has passed, you did not pass the exam..')
         try:
