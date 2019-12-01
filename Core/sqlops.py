@@ -143,7 +143,7 @@ def dataCheck(self):
         if not session.query(exists().where(Guild.id == server.id)).scalar():
             logg.error('Missing Data Detected!')
             try:
-                guild = Guild(id=server.id, name=server.name)
+                guild = Guild(id=server.id)
                 session.add(guild)
                 session.commit()
             except IntegrityError as e:
