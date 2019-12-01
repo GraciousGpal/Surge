@@ -37,7 +37,7 @@ session = sessionmaker(bind=engine)()
 class Guild(Base):
     __tablename__ = 'Guilds'
     id = Column(BigInteger, primary_key=True)
-    name = Column(String(250), nullable=False)
+    #name = Column(String(250), nullable=False)
     prefix = Column(String(2), default='+')
     roles = relationship("Role")
     modules = relationship("Module")
@@ -199,7 +199,7 @@ def create_full_table(self):
     for server in self.guilds:
         if session.query(Guild).filter_by(id=server.id).first() is None:
             try:
-                guildz = Guild(id=server.id, name=server.name)
+                guildz = Guild(id=server.id)
                 session.add(guildz)
                 # session.commit()
             except IntegrityError as e:
@@ -208,10 +208,10 @@ def create_full_table(self):
         for member in server.members:
             if session.query(Player).filter_by(id=member.id).first() is None:
                 try:
-                    # logg.info(member.id)
+                    logg.info(member.id)
                     user = Player(id=member.id, moolah=0)
                     session.add(user)
-                    # session.commit()
+                    session.commit()
                 except IntegrityError as e:
                     logg.error(e)
                     session.rollback()
