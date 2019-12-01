@@ -156,13 +156,13 @@ class Economy(commands.Cog):
         test = Query(types='player').get(10, 'moolah', 'desc')
         lis_form = list(test)
         author = [x.id for x in lis_form]
+
         for item in test:
+            user = self.bot.get_user_(item.id)
             if ctx.author.id == item.id:
-                member = discord.utils.get(ctx.guild.members, id=item.id)
-                name = "->>" + emoji_norm(member.name, "_") + "<<-"
+                name = "->>" + emoji_norm(ctx.author.name, "_") + "<<-"
             else:
-                member = discord.utils.get(ctx.guild.members, id=item.id)
-                name = emoji_norm(member.name, "_")
+                name = emoji_norm(user.name, "_")
             x.add_row([int(lis_form.index(item) + 1), name, item.moolah])
 
         if ctx.author.id not in author:
@@ -171,11 +171,12 @@ class Economy(commands.Cog):
             mini_list = test1[author - 3:author + 3]
             x.add_row(["..........", "..........", ".........."])
             for member in mini_list:
+                user = self.bot.get_user_(member.id)
                 if member.id == ctx.author.id:
-                    x.add_row([int(author - 3 + mini_list.index(member)), "->>" + emoji_norm(member.name, "_") + "<<-",
+                    x.add_row([int(author - 3 + mini_list.index(member)), "->>" + emoji_norm(user.name, "_") + "<<-",
                                member.moolah])
                 else:
-                    x.add_row([int(author - 3 + mini_list.index(member)), member.name, member.moolah])
+                    x.add_row([int(author - 3 + mini_list.index(member)), user.name, member.moolah])
         logo = ''' /$$$$$$$$                     /$$                  
 |__  $$__/                    | $$                  
    | $$ /$$$$$$  /$$$$$$  /$$$$$$$ /$$$$$$  /$$$$$$ 
