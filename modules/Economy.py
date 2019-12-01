@@ -139,7 +139,7 @@ class Economy(commands.Cog):
         selected_prof = prof_list[selection]
         
         try:
-            Player = Query(types="player", obj=member).get()
+            Player = Query(types="player", obj=ctx.author).get()
             Player.profession = selected_prof
             session.commit()
             await ctx.send('You passed the selection exam ! You have selected {}, there is no turning back now !\n'.format(selected_prof))
