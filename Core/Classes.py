@@ -51,6 +51,7 @@ class Character:
         self.has_chosen = False
         self.plyr = session.query(Player).filter(Player.id == self.user.id).first()
         if self.plyr.profession is not None:
+            logg.info(str(self.plyr.profession))
             self.has_chosen = True
 
     @property
