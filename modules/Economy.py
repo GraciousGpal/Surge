@@ -118,26 +118,25 @@ class Economy(commands.Cog):
             # DEBUG# await ctx.send("Sender Balance : {} Receiver Balance : {}".format(Query('user', ctx.author).get().moolah, Query('user', player).get().moolah))
 
     @commands.command()
-    async def profession(self, ctx):
+    async def profession(self, ctx, number=None):
         """
         Select your profession or view profession.
         """
         prof_list = [None, "Miner", "Lumberjack", "Gatherer", "Smith", "Outfitter", "Chef"]
+        Player = Character(ctx.author)
+        if Player.has_chosen:
+            await ctx.send(
+                "You have already embarked on the jounery to become a master {} , there is not turing back!".format(Player.profession))
 
-        await ctx.send(
-            " __* **Gatherer Professions:** *__\n**[1] Miner**\n**[2] Lumberjack**\n**[3] Gatherer**\n__* **Crafting Professions** *__\n**[4] Smith**\n**[5] Outfitter**\n**[6] Chef**\n Choose Your Profession(1-6)")
-
+        if number is None:
+            await ctx.send(
+                " __* **Gatherer Professions:** *__\n**[1] Miner**\n**[2] Lumberjack**\n**[3] Gatherer**\n__* **Crafting Professions** *__\n**[4] Smith**\n**[5] Outfitter**\n**[6] Chef**\n Choose Your Profession(1-6) , eg +profession 2 for Lumberjack")
         try:
-            msg = await self.bot.wait_for('message', timeout=60.0)
-        except asyncio.TimeoutError:
-            await ctx.send('Too much time has passed, you did not pass the exam..')
-        try:
-            selection = int(msg.content)
+            selection = int(number)
         except Exception as e:
             await ctx.send('Error enter a number for your profession !\n you went to the wrong selection exam..')
-        
         selected_prof = prof_list[selection]
-        
+
         try:
             Player = Query(types="player", obj=ctx.author).get()
             Player.profession = selected_prof

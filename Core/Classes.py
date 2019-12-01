@@ -54,6 +54,10 @@ class Character:
             self.has_chosen = True
 
     @property
+    def profession(self):
+        return self.plyr.profession
+
+    @property
     def moolah(self):
         return self.plyr.moolah
 
