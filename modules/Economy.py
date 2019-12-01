@@ -158,7 +158,7 @@ class Economy(commands.Cog):
         author = [x.id for x in lis_form]
 
         for item in test:
-            user = self.bot.get_user_(item.id)
+            user = self.bot.get_user(item.id)
             if ctx.author.id == item.id:
                 name = "->>" + emoji_norm(ctx.author.name, "_") + "<<-"
             else:
@@ -171,7 +171,7 @@ class Economy(commands.Cog):
             mini_list = test1[author - 3:author + 3]
             x.add_row(["..........", "..........", ".........."])
             for member in mini_list:
-                user = self.bot.get_user_(member.id)
+                user = self.bot.get_user(member.id)
                 if member.id == ctx.author.id:
                     x.add_row([int(author - 3 + mini_list.index(member)), "->>" + emoji_norm(user.name, "_") + "<<-",
                                member.moolah])
