@@ -224,15 +224,13 @@ def logs():
 
 
 # Make a partial app.run to pass args/kwargs to it
-partial_run = partial(app.run, host="0.0.0.0", port=os.environ['PORT'], debug=True, use_reloader=False)
+#partial_run = partial(app.run, host="0.0.0.0", port=os.environ['PORT'], debug=True, use_reloader=False)
 
 # Run the Flask app in another thread.
 # Unfortunately this means we can't have hot reload
 # (We turned it off above)
 # Because there's no signal support.
-t = Thread(target=partial_run)
-t.start()
-
-
+#t = Thread(target=partial_run)
+#t.start()
 
 bot.run(os.environ['DISCORDAPI'], bot=True, reconnect=True)

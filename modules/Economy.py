@@ -122,9 +122,29 @@ class Economy(commands.Cog):
         """
         Select your profession or view profession.
         """
+        prof_list = [None, "Miner", "Lumberjack", "Gatherer", "Smith", "Outfitter", "Chef"]
 
         await ctx.send(
-            " __* **Gatherer Professions:** *__\n**Miner**\n**Lumberjack**\n**Gatherer**\n__* **Crafting Professions** *__\n**Smith**\n**Outfitter**\n**Chef**")
+            " __* **Gatherer Professions:** *__\n**[1] Miner**\n**[2] Lumberjack**\n**[3] Gatherer**\n__* **Crafting Professions** *__\n**[4] Smith**\n**[5] Outfitter**\n**[6] Chef**\n Choose Your Profession(1-6)")
+
+        try:
+            msg = await ctx.wait_for('message', timeout=60.0)
+        except asyncio.TimeoutError:
+            await ctx.send('Too much time has passed, you did not pass the exam..')
+        try:
+            selection = int(msg.content)
+        except Exception as e:
+            await ctx.send('Error enter a number for your profession !\n you went to the wrong selection exam..')
+        
+        selected_prof = prof_list[selection]
+        
+        try:
+            Player = Query(types="player", obj=member).get()
+            Player.profession = selected_prof
+            session.commit()
+            await ctx.send('You passed the selection exam ! You have selected {}, there is no turning back now !\n'.format(selected_prof))
+        except Exception as e:
+            await ctx.send('Error in selecting profession! You are paralyzed with indecision')
 
     @commands.command()
     async def topdog(self, ctx):
@@ -137,10 +157,12 @@ class Economy(commands.Cog):
         lis_form = list(test)
         author = [x.id for x in lis_form]
         for item in test:
-            if ctx.author.name == item.name:
-                name = "->>" + emoji_norm(item.name, "_") + "<<-"
+            if ctx.author.id == item.id:
+                member = discord.utils.get(ctx.guild.members, id=item.id)
+                name = "->>" + emoji_norm(member.name, "_") + "<<-"
             else:
-                name = emoji_norm(item.name, "_")
+                member = discord.utils.get(ctx.guild.members, id=item.id)
+                name = emoji_norm(member.name, "_")
             x.add_row([int(lis_form.index(item) + 1), name, item.moolah])
 
         if ctx.author.id not in author:
