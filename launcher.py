@@ -7,6 +7,7 @@ import discord
 import numpy as np
 import pandas
 from discord.ext import commands
+from functools import partial
 from flask import Flask, render_template_string
 
 from Core import dataCheck, Guild, session, emb, create_full_table, Player
