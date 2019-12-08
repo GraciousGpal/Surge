@@ -194,12 +194,17 @@ class Economy(commands.Cog):
             mini_list = test1[author - 3:author + 3]
             x.add_row(["..........", "..........", ".........."])
             for member in mini_list:
+                if selxp:
+                    xp_selection = item.moolah
+                else:
+                    xp_selection = item.exp
+
                 user = self.bot.get_user(member.id)
                 if member.id == ctx.author.id:
                     x.add_row([int(author - 3 + mini_list.index(member)), "->>" + emoji_norm(user.name, "_") + "<<-",
-                               member.exp])
+                               xp_selection])
                 else:
-                    x.add_row([int(author - 3 + mini_list.index(member)), user.name, member.exp])
+                    x.add_row([int(author - 3 + mini_list.index(member)), user.name, xp_selection])
         logo = ''' _____               _             
 |_   _|             | |            
   | | ___  _ __   __| | ___   __ _ 
