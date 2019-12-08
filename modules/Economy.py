@@ -271,6 +271,7 @@ class Economy(commands.Cog):
                                             session.add(item)
                                             session.commit()
                                         except Exception as e:
+                                            logg.warning(e)
                                             session.rollback()
                                 else:
                                     inv_object = session.query(Inventory).filter(
@@ -280,7 +281,6 @@ class Economy(commands.Cog):
                                     session.commit()
 
     async def on_message(self, message):
-        amount = 2
         pass
 
 

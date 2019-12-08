@@ -374,6 +374,8 @@ class Query:
             col_a = self.type.id
         elif orderby == 'price':
             col_a = self.type.price
+        elif orderby == 'exp':
+            col_a = self.type.exp
 
         if order == "desc" and number == "special":
             colum_q = session.query(self.type).order_by(col_a.desc())

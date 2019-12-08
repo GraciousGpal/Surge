@@ -2,21 +2,20 @@ import asyncio
 import glob
 import random
 import sys
-
+import os
 import discord
 import numpy as np
 import pandas
 from discord.ext import commands
 from functools import partial
 from threading import Thread
-from flask import Flask, render_template_string
+#from flask import Flask, render_template_string
 
 from Core import dataCheck, Guild, session, emb, create_full_table, Player
 from Core.preboot import *
 
 # Initialize our app and the bot itself
-app = Flask(__name__)
-
+#app = Flask(__name__)
 
 def load_ProfData():  # Level-Location-Profession
     dt = pandas.read_csv('Core/Game/Profession_Item_drop.csv',
@@ -28,6 +27,7 @@ def load_ProfData():  # Level-Location-Profession
     lvl_data = {x: lvl_dt[x]['Xp Requirement'] for x in lvl_dt if lvl_dt[x]['Xp Requirement'] is not np.nan}
     dt = {x: dt[x] for x in dt if dt[x]['Location'] is not np.nan}
     dt['level_data'] = lvl_data
+    print(dt['level_data'])
     return dt
 
 
