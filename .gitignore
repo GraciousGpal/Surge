@@ -11,3 +11,5 @@ data.zip
 venv
 *.db
 *.ini
+*.vscode
+.vscode/settings.json
