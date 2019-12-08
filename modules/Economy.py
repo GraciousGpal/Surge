@@ -171,9 +171,9 @@ class Economy(commands.Cog):
 
         for item in test:
             if selxp:
-                xp_selection = item.exp
-            else:
                 xp_selection = item.moolah
+            else:
+                xp_selection = item.exp
 
             user = self.bot.get_user(item.id)
             if ctx.author.id == item.id:
