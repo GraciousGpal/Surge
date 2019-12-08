@@ -147,26 +147,49 @@ class Economy(commands.Cog):
                 await ctx.send('Error in selecting profession! You are paralyzed with indecision')
 
     @commands.command()
-    async def topdog(self, ctx):
+    async def topdog(self, ctx, selxp='moolah'):
         """
-        Shows the Top 10 Holders of Moolah and your Position (Local or Global).
+        Shows the Top 10 Holders of Moolah or Xp and your Position (Local or Global).
         """
+
+        if selxp == 'moolah':
+            selxp = True
+        else:
+            selxp = False
+
         x = PrettyTable()
-        x.field_names = ["Position", "Names", "Moolah"]
-        test = Query(types='player').get(10, 'moolah', 'desc')
+
+        if selxp:
+            x.field_names = ["Position", "Names", "Moolah"]
+            test = Query(types='player').get(10, 'moolah', 'desc')
+        else:
+            x.field_names = ["Position", "Names", "Exp"]
+            test = Query(types='player').get(10, 'exp', 'desc')
+    
         lis_form = list(test)
         author = [x.id for x in lis_form]
 
         for item in test:
+            if selxp:
+                xp_selection = item.exp
+            else:
+                xp_selection = item.moolah
+
             user = self.bot.get_user(item.id)
             if ctx.author.id == item.id:
                 name = "->>" + emoji_norm(ctx.author.name, "_") + "<<-"
             else:
                 name = emoji_norm(user.name, "_")
-            x.add_row([int(lis_form.index(item) + 1), name, item.moolah])
+            x.add_row([int(lis_form.index(item) + 1), name, xp_selection])
 
         if ctx.author.id not in author:
-            test1 = list(Query(types='player').get('all', 'moolah', 'desc'))
+            if selxp:
+                x.field_names = ["Position", "Names", "Moolah"]
+                test1 = list(Query(types='player').get('all', 'moolah', 'desc'))
+            else:
+                x.field_names = ["Position", "Names", "Exp"]
+                test1 = list(Query(types='player').get('all', 'exp', 'desc'))
+
             author = [test1.index(x) for x in test1 if x.id == ctx.author.id][0]
             mini_list = test1[author - 3:author + 3]
             x.add_row(["..........", "..........", ".........."])
@@ -174,9 +197,9 @@ class Economy(commands.Cog):
                 user = self.bot.get_user(member.id)
                 if member.id == ctx.author.id:
                     x.add_row([int(author - 3 + mini_list.index(member)), "->>" + emoji_norm(user.name, "_") + "<<-",
-                               member.moolah])
+                               member.exp])
                 else:
-                    x.add_row([int(author - 3 + mini_list.index(member)), user.name, member.moolah])
+                    x.add_row([int(author - 3 + mini_list.index(member)), user.name, member.exp])
         logo = ''' /$$$$$$$$                     /$$                  
 |__  $$__/                    | $$                  
    | $$ /$$$$$$  /$$$$$$  /$$$$$$$ /$$$$$$  /$$$$$$ 
