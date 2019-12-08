@@ -9,7 +9,7 @@ import pandas
 from discord.ext import commands
 from functools import partial
 from threading import Thread
-#from flask import Flask, render_template_string
+from flask import Flask, render_template_string
 
 from Core import dataCheck, Guild, session, emb, create_full_table, Player
 from Core.preboot import *
