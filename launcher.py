@@ -15,7 +15,7 @@ from Core import dataCheck, Guild, session, emb, create_full_table, Player
 from Core.preboot import *
 
 # Initialize our app and the bot itself
-#app = Flask(__name__)
+app = Flask(__name__)
 
 def load_ProfData():  # Level-Location-Profession
     dt = pandas.read_csv('Core/Game/Profession_Item_drop.csv',
