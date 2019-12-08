@@ -266,7 +266,7 @@ class Economy(commands.Cog):
                             else:
                                 starter_pack = Item(id=70, name='Mysterious Package',
                                                     description='This package has never been opened , how exciting !',
-                                                    base_value=0)
+                                                    base_value=0, types='Box')
                                 s_r = session.query(exists().where(
                                     Inventory.player_id == member.id and Inventory.item_id == starter_pack.id)).scalar()
                                 if not s_r:
