@@ -1,21 +1,17 @@
 import asyncio
-import glob
 import random
 import sys
-import os
+
 import discord
 import numpy as np
 import pandas
 from discord.ext import commands
-from functools import partial
-from threading import Thread
-from flask import Flask, render_template_string
 
 from Core import dataCheck, Guild, session, emb, create_full_table, Player
 from Core.preboot import *
 
+
 # Initialize our app and the bot itself
-app = Flask(__name__)
 
 def load_ProfData():  # Level-Location-Profession
     dt = pandas.read_csv('Core/Game/Profession_Item_drop.csv',
@@ -197,40 +193,14 @@ async def reboot(ctx):
     os.execl(sys.executable, os.path.abspath(__file__), *sys.argv)
 
 
-# Set up the 'index' route
-@app.route("/")
-def hello():
-    try:
-        text = "<p>______________________________________________<br />" + f'Logged in as: {bot.user.name} - {bot.user.id}<br />' + f"Framework Version: {discord.__version__} <br />" + f'Successfully logged in and booted...!</p>'
-        return text
-    except Exception as e:
-        return "None"
-
-
-@app.route("/logs")
-def logs():
-    list_of_files = glob.glob('data/logs/console/*')  # * means all if need specific format then *.csv
-    latest_file = max(list_of_files, key=os.path.getctime)
-    with open(latest_file, "r") as f:
-        text = ""
-        for line in f:
-            text += line + "<br/>"
-        return render_template_string('''<html>
-    <head>
-        <title>HTML in 10 Simple Steps or Less</title>
-        <meta http-equiv="refresh" content="5" >
-    </head>
-    <p>{}</p></html>'''.format(text), mimetype='text/plain')
-
-
 # Make a partial app.run to pass args/kwargs to it
-#partial_run = partial(app.run, host="0.0.0.0", port=os.environ['PORT'], debug=True, use_reloader=False)
+# partial_run = partial(app.run, host="0.0.0.0", port=os.environ['PORT'], debug=True, use_reloader=False)
 
 # Run the Flask app in another thread.
 # Unfortunately this means we can't have hot reload
 # (We turned it off above)
 # Because there's no signal support.
-#t = Thread(target=partial_run)
-#t.start()
+# t = Thread(target=partial_run)
+# t.start()
 
 bot.run(os.environ['DISCORDAPI'], bot=True, reconnect=True)

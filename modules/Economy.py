@@ -31,30 +31,30 @@ class Economy(commands.Cog):
             member = ctx.author
         else:
             member = await search(ctx, member)
-        User = Query(obj=member).get()
-        Player = Query(types="player", obj=member).get()
+        user = Query(obj=member).get()
+        player = Query(types="player", obj=member).get()
 
         if member is not None:
             embed = Embed(title="{}".format(member.name), color=(member.top_role.color))
             embed.set_thumbnail(url=member.avatar_url)
             embed.add_field(name="Nick", value=member.nick, inline=True)
-            moolah = User.moolah if User is not None else "Error"
+            moolah = user.moolah if user is not None else "Error"
             embed.add_field(name="Moolah", value=moolah, inline=True)
-            if Player.profession is None:
+            if player.profession is None:
                 embed.set_footer(text="Profession Not Set! {}-{}".format(member.id, str(member.joined_at)[:16]))
 
-            if Player.profession is not None:
+            if player.profession is not None:
                 embed.add_field(name="Stats", value="▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁", inline=False)
-                embed.add_field(name="Profession", value=Player.profession, inline=True)
-                embed.add_field(name="Level", value=Player.level, inline=True)
-                embed.add_field(name="Exp", value=Player.exp, inline=True)
-                embed.add_field(name="Power", value=Player.atk, inline=True)
-                embed.add_field(name="Mind", value=Player.defence, inline=True)
+                embed.add_field(name="Profession", value=player.profession, inline=True)
+                embed.add_field(name="Level", value=player.level, inline=True)
+                embed.add_field(name="Exp", value=player.exp, inline=True)
+                embed.add_field(name="Power", value=player.atk, inline=True)
+                embed.add_field(name="Mind", value=player.defence, inline=True)
                 embed.set_footer(text="{}-{}".format(member.id, str(member.joined_at)[:16]))
 
             await ctx.send(embed=embed)
 
-            if Player is None:
+            if player is None:
                 await ctx.send("```You have not created a character! {}create to create a character```".format(
                     self.bot.master[ctx.guild.id]["prefix"][0]))
         else:
@@ -123,10 +123,11 @@ class Economy(commands.Cog):
         Select your profession or view profession.
         """
         prof_list = [None, "Miner", "Lumberjack", "Gatherer", "Smith", "Outfitter", "Chef"]
-        Player = Character(ctx.author)
-        if Player.has_chosen:
+        player = Character(ctx.author, self)
+        if player.has_chosen:
             await ctx.send(
-                "You have already embarked on the jounery to become a master {} , there is not turing back!".format(Player.profession))
+                "You have already embarked on the jounery to become a master {} , there is not turing back!".format(
+                    player.profession))
 
         elif number is None:
             await ctx.send(
@@ -139,8 +140,8 @@ class Economy(commands.Cog):
             selected_prof = prof_list[selection]
 
             try:
-                Player = Query(types="player", obj=ctx.author).get()
-                Player.profession = selected_prof
+                player = Query(types="player", obj=ctx.author).get()
+                player.profession = selected_prof
                 session.commit()
                 await ctx.send('You passed the selection exam ! You have selected {}, there is no turning back now !\n'.format(selected_prof))
             except Exception as e:
@@ -258,20 +259,21 @@ class Economy(commands.Cog):
                 for channel in guild.voice_channels:
                     real_p = (x for x in channel.members if x.bot is False)
                     bots = (x for x in channel.members if x.bot is True)
-                    if len(channel.members) > 1 and len(list(real_p)) > len(list(bots)):
+
+                    # if the no of members is > 1 and more player than bots proceed
+                    if len(channel.members) > 1 and len(list(real_p)) >= len(list(bots)):
                         for member in channel.members:
-                            chara = Character(member)
+                            chara = Character(member, self)
                             if chara.has_chosen:
                                 chara.exp += 1
                             else:
-                                starter_pack = Item(id=70, name='Mysterious Package',
-                                                    description='This package has never been opened , how exciting !',
-                                                    base_value=0, types='Box')
+                                # If player has not setup a character give them a box with random resources
+                                start_pack_id = 70
                                 s_r = session.query(exists().where(
-                                    Inventory.player_id == member.id and Inventory.item_id == starter_pack.id)).scalar()
+                                    Inventory.player_id == member.id and Inventory.item_id == start_pack_id)).scalar()
                                 if not s_r:
-                                    inv_entry = Inventory(player_id=member.id, item_id=starter_pack.id, quantity=1)
-                                    for item in [starter_pack, inv_entry]:
+                                    inv_entry = Inventory(player_id=member.id, item_id=start_pack_id, quantity=1)
+                                    for item in [inv_entry]:
                                         try:
                                             session.add(item)
                                             session.commit()
@@ -281,7 +283,7 @@ class Economy(commands.Cog):
                                 else:
                                     inv_object = session.query(Inventory).filter(
                                         Inventory.player_id == member.id).filter(
-                                        Inventory.item_id == starter_pack.id).first()
+                                        Inventory.item_id == start_pack_id).first()
                                     inv_object.quantity += 1
                                     session.commit()
 

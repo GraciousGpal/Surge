@@ -19,14 +19,6 @@ dbx = dropbox.Dropbox(DROPAPI)
 IGNORED_FILES = ['desktop.ini', 'thumbs.db', '.ds_store', 'icon\r', '.dropbox', '.dropbox.attr']
 local_dir = ('data')  # FOR FOLDER UPLOAD
 
-
-def file_len(fname):
-    with open(fname, encoding='utf-8') as f:
-        for i, l in enumerate(f):
-            pass
-    return i + 1
-
-
 def is_ignored(filename):
     filename_lower = filename.lower()
     for ignored_file in IGNORED_FILES:
@@ -35,20 +27,19 @@ def is_ignored(filename):
     return False
 
 
-class dropboxstorage(commands.Cog):
+class Dropboxstorage(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.modname = "dropboxstorage"
         self.Description = "BacksUp Data to a Dropbox Server"
         self.provision = self.bot.loop.create_task(self.BnU())
-        restore("data.zip", "/data.zip")
-        unzip()
 
     async def BnU(self):
         """
         Continuous function that restores and backs up
         :return:
         """
+
         await self.bot.wait_until_ready()
         while True:
             await asyncio.sleep(60*15)
@@ -61,7 +52,6 @@ def restore(file, path):
         logger.info("[USER.db] Detected Removing.....Done")
     except OSError:
         logger.warning("OSError")
-        pass
     try:
         logger.info("Downloading current " + path + " from Dropbox, overwriting " + file + "...")
         dbx.files_download_to_file(file, path)
@@ -132,15 +122,23 @@ def unzip():
         for name in z.namelist():
             outpath = "data//"
             z.extract(name, outpath)
+        fh.close()
         logger.info("Extracted data.zip ")
     except Exception as e :
         logger.error(e)
 
     try:
         os.remove("data.zip")
+        logger.info("Removed data.zip")
     except Exception as e:
         logger.error(e)
 
 
 def setup(bot):
+    try:
+        os.remove("data.zip")
+    except Exception as e:
+        logger.error(e)
+    restore("data.zip", "/data.zip")
+    unzip()
     bot.add_cog(dropboxstorage(bot))

@@ -17,7 +17,7 @@ Base = declarative_base()
 # Create an engine that stores data in the local directory's
 # sqlalchemy_example.db file.
 # engine = create_engine('sqlite:///data/data.db')
-engine = create_engine(os.environ['DB_CON_STRING'])
+engine = create_engine(os.environ['DB_CON'])
 
 # Bind the engine to the metadata of the Base class so that the
 # declaratives can be accessed through a DBSession instance

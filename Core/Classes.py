@@ -35,7 +35,7 @@ class Profession:
                 area.append(self.master["ProfData"][lvl]['Location'])
         return area
 
-    def mine(self, location):
+    def gain(self, location):
         profdata = self.master["ProfData"]
 
 
@@ -46,12 +46,16 @@ class Location:
 
 
 class Character:
-    def __init__(self, user):
+    def __init__(self, user, store=None):
+        self.bot = store.bot
         self.user = user
         self.has_chosen = False
         self.plyr = session.query(Player).filter(Player.id == self.user.id).first()
+
+        if self.plyr is None:
+            self.create_player()
+
         if self.plyr.profession is not None:
-            logg.info(str(self.plyr.profession))
             self.has_chosen = True
 
     @property
@@ -59,15 +63,43 @@ class Character:
         return self.plyr.profession
 
     @property
+    def level(self):
+        return self.plyr.level
+
+    @level.setter
+    def level(self, value):
+        if value < 0:
+            value = 0
+        try:
+            self.plyr.level = value
+            session.commit()
+        except Exception as e:
+            logg.error("Level up error {} - {}".format(self.user.id, value))
+
+    @property
     def moolah(self):
         return self.plyr.moolah
 
     @moolah.setter
     def moolah(self, value):
+        try:
+            transaction = abs(int(value))
+        except ValueError:
+            raise ValueError('Please Enter a Number')
+
+        if transaction >= 2147483647:
+            raise OverflownError('Cannot Exceed the transaction max limit ! [2147483647] ')
+
         if value < 0:
             value = 0
-        self.plyr.moolah = value
-        session.commit()
+
+        if self.plyr.moolah < value:
+            raise InsufficientFunds("{} in Balance, transaction {}".format(self.plyr.moolah, value))
+        try:
+            self.plyr.moolah = value
+            session.commit()
+        except Exception as e:
+            logg.error("Moolah transaction error {} - {}".format(self.user.id, value))
 
     @property
     def exp(self):
@@ -81,8 +113,21 @@ class Character:
             raise CharacterNotSetup("Your Character has not been setup!.")
         if value < 0:
             value = 0
-        self.plyr.exp = value
-        session.commit()
+
+        try:
+            self.plyr.exp = value
+            new_lvl = max([x for x in self.bot.master["ProfData"]["level_data"] if
+                           self.plyr.exp >= self.bot.master["ProfData"]["level_data"][x]])
+            old_c = new_lvl
+            # Level Up logic
+            if old_c != self.level:
+                old_lvl = int(self.plyr.level)
+                self.plyr.level = new_lvl
+                logg.info("Leveled: {} - {} --> {}".format(self.user.name, old_lvl, self.plyr.level))
+
+            session.commit()
+        except Exception as e:
+            logg.error(e)
 
     @property
     def inventory(self):
@@ -97,7 +142,7 @@ class Character:
             session.add(player)
             session.commit()
         except Exception as e:
-            logg.info(e)
+            logg.error(e)
 
 
 class CharacterNotSetup(Exception):
