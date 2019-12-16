@@ -141,4 +141,4 @@ def setup(bot):
         logger.error(e)
     restore("data.zip", "/data.zip")
     unzip()
-    bot.add_cog(dropboxstorage(bot))
+    bot.add_cog(Dropboxstorage(bot))
