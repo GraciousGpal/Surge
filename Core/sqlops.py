@@ -47,7 +47,7 @@ class Player(Base):
     __tablename__ = 'player'
     id = Column(BigInteger, primary_key=True)
     #name = Column(String(32), nullable=False)
-    moolah = Column(BigInteger, CheckConstraint('moolah >= 0'), nullable=False)
+    moolah = Column(BigInteger, CheckConstraint('moolah >= 0'), nullable=False, default=0)
     updated_on = Column(DateTime, nullable=False, default=datetime.now(), onupdate=datetime.now())
     # ----------BASE----------#
     profession = Column(String(32), default=None)

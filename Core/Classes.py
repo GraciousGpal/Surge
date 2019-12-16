@@ -74,6 +74,7 @@ class Character:
             self.plyr.level = value
             session.commit()
         except Exception as e:
+            session.rollback()
             logg.error("Level up error {} - {}".format(self.user.id, value))
 
     @property
@@ -99,6 +100,7 @@ class Character:
             self.plyr.moolah = value
             session.commit()
         except Exception as e:
+            session.rollback()
             logg.error("Moolah transaction error {} - {}".format(self.user.id, value))
 
     @property
@@ -127,6 +129,7 @@ class Character:
 
             session.commit()
         except Exception as e:
+            session.rollback()
             logg.error(e)
 
     @property
@@ -142,6 +145,7 @@ class Character:
             session.add(player)
             session.commit()
         except Exception as e:
+            session.rollback()
             logg.error(e)
 
 
