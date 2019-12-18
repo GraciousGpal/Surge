@@ -7,9 +7,9 @@ import discord
 from discord import Embed
 from discord.ext import commands
 from prettytable import PrettyTable
-from sqlalchemy.exc import SQLAlchemyError
 
-from Core import transaction, search, Query, create_player, emb, emoji_norm, Character, Item, Inventory, session
+from Core import transaction, search, Query, create_player, emb, emoji_norm, Character, Item, Inventory, session, \
+    SQLAlchemyError
 
 logg = logging.getLogger(__name__)
 
@@ -268,24 +268,26 @@ class Economy(commands.Cog):
                 "I can accept it at a reasonable price, (-50%-60% base price)\nSimple recite the magic words:\n"
                 "+vendor sell/buy itemforsale quantity\n I also sell the basic necessities and things that come"
                 " into my grasp```")
-
-        elif quant is not None:
-            quant = self.bot.input_sanitation(quant)
-        if action == "sell":
-            inv_item = await character.take_from_inv(id_item=item, quantity=quant)
-            total_value = inv_item[0] * inv_item[1] - inv_item[0] * inv_item[1] * random.randint(50, 60) / 100
-            try:
-                character.moolah += int(total_value)
-                session.commit()
-                await ctx.send("```You sold {} {}  for {} M".format(quant, item, total_value))
-            except SQLAlchemyError as e:
-                logg.error(e)
-                session.rollback()
-        elif action == "buy":
-            ctx.send("Slow down young one! I am still setting up the shop.")
         elif action is None:
             await ctx.send("```Err what are you saying bud. Are you trying to sell me something or buy something ? ,"
                            " my customers usually just say :\n +vendor sell/buy itemforsale quantity```")
+        elif quant is None:
+            await ctx.send("```Please enter a quantity mate```")
+        else:
+            quant = self.bot.input_sanitation(quant)
+            if action == "sell":
+                inv_item = await character.take_from_inv(id_item=item, quantity=quant)
+                total_value = inv_item[0] * inv_item[1] - inv_item[0] * inv_item[1] * random.randint(50, 60) / 100
+                try:
+                    character.moolah += int(total_value)
+                    session.commit()
+                    await ctx.send("```You sold {} {}  for {} M".format(quant, item, total_value))
+                except SQLAlchemyError as e:
+                    logg.error(e)
+                    session.rollback()
+            elif action == "buy":
+                await ctx.send(
+                    "Slow down young one! I am still setting up the shop.")  # TODO Implement a random rotating shop
 
     async def VresourceDist(self):
         """

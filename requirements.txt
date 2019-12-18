@@ -5,7 +5,7 @@ emoji
 psycopg2-binary
 pymysql
 requests
-discord.py[voice]
+discord.py
 prettytable
 sqlalchemy
 flask

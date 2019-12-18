@@ -1,5 +1,6 @@
 import logging
 import os
+from contextlib import contextmanager
 from datetime import datetime
 
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, CheckConstraint, Boolean, create_engine, \
@@ -37,7 +38,7 @@ session = sessionmaker(bind=engine)()
 class Guild(Base):
     __tablename__ = 'Guilds'
     id = Column(BigInteger, primary_key=True)
-    #name = Column(String(250), nullable=False)
+    # name = Column(String(250), nullable=False)
     prefix = Column(String(2), default='+')
     roles = relationship("Role")
     modules = relationship("Module")
@@ -46,7 +47,7 @@ class Guild(Base):
 class Player(Base):
     __tablename__ = 'player'
     id = Column(BigInteger, primary_key=True)
-    #name = Column(String(32), nullable=False)
+    # name = Column(String(32), nullable=False)
     moolah = Column(BigInteger, CheckConstraint('moolah >= 0'), nullable=False, default=0)
     updated_on = Column(DateTime, nullable=False, default=datetime.now(), onupdate=datetime.now())
     # ----------BASE----------#
@@ -121,6 +122,26 @@ class Auction(Base):
     # ------------------------- #
     player = relationship("Player")
     item = relationship("Item")
+'''
+@contextmanager
+def session_scope():
+    """Provide a transactional scope around a series of operations."""
+    session = Session()
+    try:
+        yield session
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+'''
+
+
+
+#with session_scope() as session:
+#    pass
+
 
 
 async def create_player(ctx, class_m):
@@ -196,7 +217,7 @@ def dataCheck(self):
 
 
 def create_full_table(self):
-    #Base.metadata.drop_all(engine)
+    # Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     logg.info("Filling Tables ...")
     for server in self.guilds:
@@ -367,7 +388,7 @@ class Query:
         :return:
         """
 
-        if number is 'all':
+        if number == 'all':
             number = self.count()
         elif number is None:
             return session.query(self.type).filter_by(id=self.obj.id).first()

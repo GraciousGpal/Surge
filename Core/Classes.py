@@ -97,11 +97,14 @@ class Character:
         if transaction >= 2147483647:
             raise OverflownError('Cannot Exceed the transaction max limit ! [2147483647] ')
 
-        if value < 0:
-            value = 0
+        if value < self.plyr.moolah:  # Detect subtraction
+            if value < 0:
+                raise InsufficientFunds(
+                    "{} in balance, Transaction amount: {}".format(self.plyr.moolah, self.plyr.moolah + value * -1))
 
-        if self.plyr.moolah < value:
-            raise InsufficientFunds("{} in Balance, transaction {}".format(self.plyr.moolah, value))
+        if self.plyr.moolah < 0:
+            self.plyr.moolah = 0
+
         try:
             self.plyr.moolah = value
             session.commit()
@@ -217,7 +220,7 @@ class Character:
                     session.delete(inv_object)
 
                 session.commit()
-                return inv_object.base_value, quantity
+                return inv_object.item.base_value, quantity
             except SQLAlchemyError as e:
                 logg.warning(e)
                 session.rollback()

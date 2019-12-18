@@ -19,6 +19,7 @@ dbx = dropbox.Dropbox(DROPAPI)
 IGNORED_FILES = ['desktop.ini', 'thumbs.db', '.ds_store', 'icon\r', '.dropbox', '.dropbox.attr']
 local_dir = ('data')  # FOR FOLDER UPLOAD
 
+
 def is_ignored(filename):
     filename_lower = filename.lower()
     for ignored_file in IGNORED_FILES:
@@ -42,8 +43,9 @@ class Dropboxstorage(commands.Cog):
 
         await self.bot.wait_until_ready()
         while True:
-            await asyncio.sleep(60*15)
+            await asyncio.sleep(60 * 15)
             await folderzipupload("data")
+
 
 def restore(file, path):
     # Download the specific revision of the file at BACKUPPATH to LOCALFILE
@@ -124,7 +126,7 @@ def unzip():
             z.extract(name, outpath)
         fh.close()
         logger.info("Extracted data.zip ")
-    except Exception as e :
+    except Exception as e:
         logger.error(e)
 
     try:

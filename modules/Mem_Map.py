@@ -13,6 +13,7 @@ from sqlalchemy.schema import CreateColumn
 
 logg = logging.getLogger(__name__)
 
+
 def write(location, data):
     with open(location, 'w') as outfile:
         json.dump(data, outfile)
