@@ -1,12 +1,13 @@
 import asyncio
 import logging
+import random
 from datetime import datetime
 
 import discord
 from discord import Embed
 from discord.ext import commands
 from prettytable import PrettyTable
-from sqlalchemy import exists
+from sqlalchemy.exc import SQLAlchemyError
 
 from Core import transaction, search, Query, create_player, emb, emoji_norm, Character, Item, Inventory, session
 
@@ -115,7 +116,6 @@ class Economy(commands.Cog):
             author.remove(amount)
             reciever.add(amount)
             await ctx.send("{} Moolah sent to {}!".format(amount, player))
-            # DEBUG# await ctx.send("Sender Balance : {} Receiver Balance : {}".format(Query('user', ctx.author).get().moolah, Query('user', player).get().moolah))
 
     @commands.command()
     async def profession(self, ctx, number=None):
@@ -143,9 +143,12 @@ class Economy(commands.Cog):
                 player = Query(types="player", obj=ctx.author).get()
                 player.profession = selected_prof
                 session.commit()
-                await ctx.send('You passed the selection exam ! You have selected {}, there is no turning back now !\n'.format(selected_prof))
+                await ctx.send(
+                    'You passed the selection exam ! You have selected {}, there is no turning back now !\n'.format(
+                        selected_prof))
             except Exception as e:
                 await ctx.send('Error in selecting profession! You are paralyzed with indecision')
+                session.rollback()
 
     @commands.command()
     async def topdog(self, ctx, selxp='moolah'):
@@ -166,7 +169,7 @@ class Economy(commands.Cog):
         else:
             x.field_names = ["Position", "Names", "Exp"]
             test = Query(types='player').get(10, 'exp', 'desc')
-    
+
         lis_form = list(test)
         author = [x.id for x in lis_form]
 
@@ -181,7 +184,7 @@ class Economy(commands.Cog):
                 name = "->>" + emoji_norm(ctx.author.name, "_") + "<<-"
             else:
                 name = emoji_norm(user.name, "_")
-            x.add_row([int(lis_form.index(item) + 1), name, xp_selection])
+            x.add_row([int(lis_form.index(item) + 1), name.replace("'", ""), xp_selection])
 
         if ctx.author.id not in author:
             if selxp:
@@ -202,10 +205,11 @@ class Economy(commands.Cog):
 
                 user = self.bot.get_user(member.id)
                 if member.id == ctx.author.id:
-                    x.add_row([int(author - 3 + mini_list.index(member)), "->>" + emoji_norm(user.name, "_") + "<<-",
+                    x.add_row([int(author - 3 + mini_list.index(member)),
+                               "->>" + emoji_norm(user.name, "_").replace("'", "") + "<<-",
                                xp_selection])
                 else:
-                    x.add_row([int(author - 3 + mini_list.index(member)), user.name, xp_selection])
+                    x.add_row([int(author - 3 + mini_list.index(member)), user.name.replace("'", ""), xp_selection])
         logo = ''' _____               _             
 |_   _|             | |            
   | | ___  _ __   __| | ___   __ _ 
@@ -246,6 +250,43 @@ class Economy(commands.Cog):
         elif action == "sell" and role_name is not None:
             await ctx.send("IN PROGRESS")
 
+    @commands.command()
+    async def vendor(self, ctx, action=None, item=None, quant=None):
+        """
+        Sell your items for cheap in the pawnshop
+        :param ctx:
+        :param action:
+        :param item:
+        :param quant:
+        :return:
+        """
+
+        character = Character(ctx.author, self)
+        if item is None:
+            await ctx.send(
+                "```Welcome to the Pawn Shop!\nIf u would like to sell something, "
+                "I can accept it at a reasonable price, (-50%-60% base price)\nSimple recite the magic words:\n"
+                "+vendor sell/buy itemforsale quantity\n I also sell the basic necessities and things that come"
+                " into my grasp```")
+
+        elif quant is not None:
+            quant = self.bot.input_sanitation(quant)
+        if action == "sell":
+            inv_item = await character.take_from_inv(id_item=item, quantity=quant)
+            total_value = inv_item[0] * inv_item[1] - inv_item[0] * inv_item[1] * random.randint(50, 60) / 100
+            try:
+                character.moolah += int(total_value)
+                session.commit()
+                await ctx.send("```You sold {} {}  for {} M".format(quant, item, total_value))
+            except SQLAlchemyError as e:
+                logg.error(e)
+                session.rollback()
+        elif action == "buy":
+            ctx.send("Slow down young one! I am still setting up the shop.")
+        elif action is None:
+            await ctx.send("```Err what are you saying bud. Are you trying to sell me something or buy something ? ,"
+                           " my customers usually just say :\n +vendor sell/buy itemforsale quantity```")
+
     async def VresourceDist(self):
         """
         Continuous function that distributes moolah to the miners
@@ -268,24 +309,7 @@ class Economy(commands.Cog):
                                 chara.exp += 1
                             else:
                                 # If player has not setup a character give them a box with random resources
-                                start_pack_id = 70
-                                s_r = session.query(exists().where(
-                                    Inventory.player_id == member.id and Inventory.item_id == start_pack_id)).scalar()
-                                if not s_r:
-                                    inv_entry = Inventory(player_id=member.id, item_id=start_pack_id, quantity=1)
-                                    for item in [inv_entry]:
-                                        try:
-                                            session.add(item)
-                                            session.commit()
-                                        except Exception as e:
-                                            logg.warning(e)
-                                            session.rollback()
-                                else:
-                                    inv_object = session.query(Inventory).filter(
-                                        Inventory.player_id == member.id).filter(
-                                        Inventory.item_id == start_pack_id).first()
-                                    inv_object.quantity += 1
-                                    session.commit()
+                                await chara.add_to_inv(id_item=70, quantity=1)
 
     async def on_message(self, message):
         pass

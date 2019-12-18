@@ -88,8 +88,12 @@ class MemberLogger(commands.Cog):
         data = MapDataVoice(time=int(time.time()), member=message.author.id,
                             present=str(mentions),
                             type=False)
-        self.session.add(data)
-        self.session.commit()
+        try:
+            self.session.add(data)
+            self.session.commit()
+        except Exception as e:
+            logg.error(e)
+            self.session.rollback()
 
     async def on_voice_state_update(self, member, before, after):
         if member.bot:
@@ -107,8 +111,12 @@ class MemberLogger(commands.Cog):
                     return
                 data = MapDataVoice(time=int(time.time()), member=member.id,
                                     present=str(members))
-                self.session.add(data)
-                self.session.commit()
+                try:
+                    self.session.add(data)
+                    self.session.commit()
+                except Exception as e:
+                    logg.error(e)
+                    self.session.rollback()
 
 
 def setup(bot):

@@ -23,7 +23,6 @@ def load_ProfData():  # Level-Location-Profession
     lvl_data = {x: lvl_dt[x]['Xp Requirement'] for x in lvl_dt if lvl_dt[x]['Xp Requirement'] is not np.nan}
     dt = {x: dt[x] for x in dt if dt[x]['Location'] is not np.nan}
     dt['level_data'] = lvl_data
-    print(dt['level_data'])
     return dt
 
 
@@ -112,6 +111,23 @@ class MyClient(commands.Bot):
         else:
             await ctx.message.channel.send("```" + str(error) + "```")
 
+    def input_sanitation(self, amount):
+        """
+        Cleans int inputs to prevent overflows
+        :param amount:
+        :return:
+        """
+        try:
+            clean_amount = abs(int(amount))
+        except ValueError or TypeError as e:
+            raise TypeError('Please Enter a Number')
+
+        if clean_amount >= 2147483647:
+            raise self.OverflownError('Cannot Exceed the transaction max limit ! [2147483647] ')
+        return clean_amount
+
+    class OverflownError(Exception):
+        pass
 
 # Declaring Client & command prefixes/descriptions..
 bot = MyClient(command_prefix=get_prefix, description='Get Some when you need it!')

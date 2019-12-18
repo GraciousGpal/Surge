@@ -181,8 +181,11 @@ def dataCheck(self):
                     session.add(Module(guild_id=server.id, name=module, state=False))
             except Exception as e:
                 raise (e)
-
-    session.commit()
+    try:
+        session.commit()
+    except SQLAlchemyError as e:
+        logg.error(e)
+        session.rollback()
 
     # Load Settings into Master Index
     for server in self.guilds:
@@ -204,6 +207,7 @@ def create_full_table(self):
                 # session.commit()
             except IntegrityError as e:
                 logg.error(e)
+                session.rollback()
 
         for member in server.members:
             if session.query(Player).filter_by(id=member.id).first() is None:
@@ -211,7 +215,7 @@ def create_full_table(self):
                     logg.info(member.id)
                     user = Player(id=member.id, moolah=0)
                     session.add(user)
-                    session.commit()
+                    # session.commit()
                 except IntegrityError as e:
                     logg.error(e)
                     session.rollback()
@@ -265,7 +269,11 @@ def create_full_table(self):
                     session.rollback()'''
 
     logg.info("Table Creation finished!")
-    session.commit()
+    try:
+        session.commit()
+    except SQLAlchemyError as e:
+        logg.error(e)
+        session.rollback()
 
 
 class transaction:
