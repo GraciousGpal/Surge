@@ -97,10 +97,9 @@ class Character:
         if transaction >= 2147483647:
             raise OverflownError('Cannot Exceed the transaction max limit ! [2147483647] ')
 
-        if value < self.plyr.moolah:  # Detect subtraction
-            if value < 0:
-                raise InsufficientFunds(
-                    "{} in balance, Transaction amount: {}".format(self.plyr.moolah, self.plyr.moolah + value * -1))
+        if value < self.plyr.moolah and value < 0:  # Detect subtraction
+            raise InsufficientFunds(
+                "{} in balance, Transaction amount: {}".format(self.plyr.moolah, self.plyr.moolah + value * -1))
 
         if self.plyr.moolah < 0:
             self.plyr.moolah = 0
