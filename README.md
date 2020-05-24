@@ -1,23 +1,24 @@
 # Surge
 A successor to the pax discord bot designed to improve social interactivity.
 
-Surge bot is something that was born from the needs of a small discord community.
-Initially All it did was display welcoming text, It has since evolved to something much greater.
-Pax is built around the Idea of Modularity :
+Surge Bot is something that was born from the needs of a small discord community.  
+Initially All it did was display welcoming text, It has since evolved to something much greater.  
+Surge is built around the Idea of Modularity :  
+ * The Host server has all the plugins avaliable and it can freely let its users add to its repositoire .  
+ * The clients can then choose what functionality they require.   
 
-    The Host server has all the plugins avaliable and it can freely let its users add to its repositoire .
-    The clients can then choose what functionality they require.
 
-Creating your Own Modules!
+
+# Creating your Own Modules!
 
 You can easily add your creation to the bot with a simple few steps.
 
-    Main part of the code needs to be contained in a class.
-    Must contain the modulename and Description in the class initialization.
-    The end of the file must contain a setup function.
+ * Main part of the code needs to be contained in a class.
+ * Must contain the modulename and Description in the class initialization.
+ * The end of the file must contain a setup function.
 
-Example:
-
+**Example:**
+```python
 class members():
     def __init__(self, bot):
         self.bot = bot
@@ -30,9 +31,10 @@ class members():
 
 def setup(bot):
     bot.add_cog(members(bot))
-
+```
 Note that Listeners/Events need:
-
+```python
     Documentation coming soon
-
+```
 It stops them from executing without installation.
+
